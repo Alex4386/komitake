@@ -109,49 +109,6 @@ Clients talk to the daemon over the admin API (`unix:/run/komitake.sock` by defa
 See [USAGE.md](./USAGE.md) for pairing, the web UI and REST API, video, config, logging, and shell completion.  
 For Quickstart, see [QUICKSTART.md](./QUICKSTART.md) for how to get it running in no time.
 
-## Notes
-
-- LP2P AP mode needs the patched `hostapd` from `third_party/openkart-hostapd`; `./build.sh` builds it by default.
-- Install rewrites `wireless.hostapd_path` to the installed `komitake-hostapd`.
-- Local `./config.json` wins over `/etc/komitake/config.json` unless `--config` is set. See [config.example.json](./config.example.json).
-- Config uses nested `socket`, `web`, and `wireless` objects; legacy flat keys still load and are migrated on save.
-- Video transcode uses hardware H.264 when available. Set `video.hwaccel` to `auto` (default), `vaapi`, `nvenc`, `qsv`, or `custom` in config.json. `auto` probes ffmpeg encoders and `/dev/dri/renderD*` at daemon startup. Optionally set `video.ffmpeg_path` and `video.ffmpeg_args` to override the binary or append custom input/output arguments. There is no silent software fallback unless you configure it explicitly.
-- If you are using `NetworkManager` or other NIC management daemons, this "might" conflict with that, disable NetworkManager on the specified interface with following command:
-  ```bash
-  sudo nmcli device set <iface> managed no
-  ```
-
-## Architecture
-
-```
-cmd/komitake/                 # cobra CLI
-internal/wireless/            # hostapd AP, DHCP, LP2P
-internal/wireless/lp2p/       # vendor-IE crypto + generated nonce table
-internal/rcd/                 # RCD wire protocol + handshake
-internal/fuji/                # pairing, control, drive, telemetry
-internal/daemon/              # DOWN / PAIRING / RUNNING; LSP video + transcoder
-internal/config/              # config + persistent pairing/state
-internal/ipc/                 # AdminService adapters (no protobuf in the SM)
-internal/web/                 # huma REST, WS, WebRTC, embedded Vite/React UI
-internal/logging/             # slog + secret redaction
-pkg/komitake/                 # public Go client for the admin API
-proto/komitake/admin/v1/      # AdminService schema + generated stubs
-docs/                         # Fuji LSP / video format notes
-```
-
-Admin RPCs are defined in [proto/komitake/admin/v1/admin.proto](proto/komitake/admin/v1/admin.proto). Generated `*.pb.go` files are committed. Plugins are pinned as `tool` directives in `go.mod`:
-
-```sh
-go install github.com/bufbuild/buf/cmd/buf@latest
-buf generate proto
-```
-
-State changes and connect/disconnect funnel through `daemon.Observer` ([internal/daemon/events.go](internal/daemon/events.go)); the default is a no-op.
-
-## Implementation Guide
-
-Wire formats follow the [switchbrew documentation](https://switchbrew.org/wiki/Mario_Kart_Live:_Home_Circuit). Fuji LSP video layouts used by Komitake are summarized in [docs/fuji-video.md](docs/fuji-video.md).
-
 ## Credits
 
 - [switchbrew.org documentation](https://switchbrew.org/wiki/Mario_Kart_Live:_Home_Circuit)
@@ -169,3 +126,6 @@ Wire formats follow the [switchbrew documentation](https://switchbrew.org/wiki/M
 - **Does it run on macOS or Windows?**  
   The daemon (access point, pairing, drive, camera transcode) is Linux-only today because it drives a patched `hostapd` and configures the wireless interface directly. You can run client commands (`komitake status`, `komitake web`, …) from another OS by pointing `--address` at a Linux host with `socket.bind` set to TCP.  
   You can technically try with WSL2, but it is not supported. continue at your own risk. [./docs/wsl2-setup.md](./docs/wsl2-setup.md)
+
+- **I want to know more about LSP and MoLive2!**  
+  Check the analysis at [./docs/fuji-video.md](./docs/fuji-video.md)
