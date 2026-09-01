@@ -111,7 +111,7 @@ For Quickstart, see [QUICKSTART.md](./QUICKSTART.md) for how to get it running i
 ## FAQ
 
 - **Why name it [Komitake](https://ja.wikipedia.org/wiki/%E5%AF%8C%E5%A3%AB%E5%B1%B1#%E5%9C%B0%E8%B3%AA%E5%AD%A6%E4%B8%8A%E3%81%AE%E5%AF%8C%E5%A3%AB%E5%B1%B1)?**  
-  Mt. Fuji is built on top of <a href="https://ja.wikipedia.org/wiki/%E5%AF%8C%E5%A3%AB%E5%B1%B1#%E5%9C%B0%E8%B3%AA%E5%AD%A6%E4%B8%8A%E3%81%AE%E5%AF%8C%E5%A3%AB%E5%B1%B1">Mt. Komitake</a>, and so does your Fuji control stack runs on Komitake.
+  Mt. Fuji is built on top of <a href="https://ja.wikipedia.org/wiki/%E5%AF%8C%E5%A3%AB%E5%B1%B1#%E5%9C%B0%E8%B3%AA%E5%AD%A6%E4%B8%8A%E3%81%AE%E5%AF%8C%E5%A3%AB%E5%B1%B1">Mt. Komitake</a>, and so does your Fuji control stack runs on abstracted connection on top of Komitake.
 
 - **What do I need?**  
   A Linux PC, a Wi-Fi adapter that supports SoftAP mode, and a Fuji kart. See [QUICKSTART.md](./QUICKSTART.md) for a step-by-step setup.
