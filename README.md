@@ -3,14 +3,12 @@
   <img src="docs/banner.expanded.svg" alt="Komitake: connect a Fuji kart to your PC" width="1280" />
 </p>
 
-<hr />
-
 <a href="https://ja.wikipedia.org/wiki/%E5%AF%8C%E5%A3%AB%E5%B1%B1#%E5%9C%B0%E8%B3%AA%E5%AD%A6%E4%B8%8A%E3%81%AE%E5%AF%8C%E5%A3%AB%E5%B1%B1">
   <code>Komitake</code> <sup>(小御岳)</sup>
 </a> is a Go daemon and CLI that provides the Wi-Fi connectivity plane for a companion RC kart (Fuji).
 It emulates the <code>"game"</code>'s <code>FujiControl</code> classes and several <code>LSP</code> and <code>MoLive2</code> demuxing into a one bundled daemon, allowing you to control and manage connection.  
-  
-  
+<br />
+<br />
   
 > [!TIP]  
 > **Looking for how to use kart on your PC?**  
