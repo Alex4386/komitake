@@ -65,12 +65,6 @@ go build -o komitake ./cmd/komitake
 
 `./build.sh` initializes `third_party/openkart-hostapd` and nested `hostap` if needed. `go generate` writes `internal/wireless/lp2p/lp2p_nonces.bin` (gitignored, embedded at compile time). Without a UI build, `komitake web` still serves the API and a placeholder page.
 
-Edit banner copy in [docs/banner.svg](docs/banner.svg), then regenerate the path-based README asset (downloads [Pretendard JP](https://github.com/orioncactus/pretendard) into `docs/fonts/` on first run):
-
-```sh
-./scripts/expand-banner.sh   # writes docs/banner.expanded.svg
-```
-
 ## Install
 
 ```sh
