@@ -1,0 +1,125 @@
+#!/bin/sh
+set -eu
+
+ROOT_DIR="$(CDPATH= cd -- "$(dirname "$0")" && pwd)"
+PREFIX="${PREFIX:-/usr}"
+DESTDIR="${DESTDIR:-}"
+SYSCONFDIR="${SYSCONFDIR:-/etc}"
+BINDIR="${BINDIR:-$PREFIX/bin}"
+SYSTEMD_UNIT_DIR="${SYSTEMD_UNIT_DIR:-$SYSCONFDIR/systemd/system}"
+GO_CACHE_DIR="$ROOT_DIR/.gocache"
+GO_TMP_DIR="$ROOT_DIR/.gotmp"
+HOSTAPD_BUILD_OUT="$ROOT_DIR/hostapd"
+HOSTAPD_INSTALL_NAME="${HOSTAPD_INSTALL_NAME:-komitake-hostapd}"
+KOMITAKE_DST="$DESTDIR$BINDIR/komitake"
+HOSTAPD_DST="$DESTDIR$BINDIR/$HOSTAPD_INSTALL_NAME"
+CONFIG_DIR="$DESTDIR$SYSCONFDIR/komitake"
+CONFIG_DST="$CONFIG_DIR/config.json"
+CONFIG_EXAMPLE_DST="$CONFIG_DIR/config.example.json"
+SECRET_DST="$CONFIG_DIR/secret"
+
+mkdir -p "$GO_CACHE_DIR" "$GO_TMP_DIR"
+
+HOSTAPD_BINARY_OUTPUT="$HOSTAPD_BUILD_OUT" "$ROOT_DIR/build.sh"
+
+# Embed a fresh web UI into the binary (skip with SKIP_WEBUI=1).
+if [ "${SKIP_WEBUI:-0}" != "1" ]; then
+  "$ROOT_DIR/scripts/rebuild-webui.sh"
+fi
+
+# Fetch/generate the embedded lp2p nonce table (not committed).
+GOCACHE="$GO_CACHE_DIR" GOTMPDIR="$GO_TMP_DIR" go generate "$ROOT_DIR/internal/wireless/lp2p"
+
+# Stamp the binary so `komitake --version` reports something meaningful.
+VERSION="${VERSION:-$(git -C "$ROOT_DIR" describe --tags --always --dirty 2>/dev/null || echo dev)}"
+GOCACHE="$GO_CACHE_DIR" GOTMPDIR="$GO_TMP_DIR" go build \
+  -ldflags "-X main.version=$VERSION" \
+  -o "$ROOT_DIR/komitake" ./cmd/komitake
+
+install_parent() {
+  dst="$1"
+  dir="$(dirname "$dst")"
+  if mkdir -p "$dir" 2>/dev/null; then
+    return 0
+  fi
+  if command -v sudo >/dev/null 2>&1; then
+    sudo mkdir -p "$dir"
+    return 0
+  fi
+  echo "cannot create $dir"
+  echo "rerun with sudo or set DESTDIR/PREFIX/BINDIR/SYSCONFDIR/SYSTEMD_UNIT_DIR"
+  exit 1
+}
+
+install_file() {
+  src="$1"
+  dst="$2"
+  mode="$3"
+  install_parent "$dst"
+  if install -m "$mode" "$src" "$dst" 2>/dev/null; then
+    return 0
+  fi
+  if command -v sudo >/dev/null 2>&1; then
+    sudo install -m "$mode" "$src" "$dst"
+    return 0
+  fi
+  echo "cannot install $src to $dst"
+  echo "rerun with sudo or set DESTDIR/PREFIX/BINDIR/SYSCONFDIR/SYSTEMD_UNIT_DIR"
+  exit 1
+}
+
+install_generated_config() {
+  tmp_config="$ROOT_DIR/.install-config.json"
+  tmp_secret="$ROOT_DIR/.install-secret"
+  sed "s#\"hostapd_path\": \"./hostapd\"#\"hostapd_path\": \"$HOSTAPD_DST\"#" "$ROOT_DIR/config.example.json" |
+    sed '/"secret":/d' > "$tmp_config"
+  # Keep the placeholder secret out of the world-readable config.json.
+  printf '%s\n' 'replace-this-with-a-stable-secret' > "$tmp_secret"
+  trap 'rm -f "$tmp_config" "$tmp_secret"' EXIT INT TERM
+
+  install_file "$tmp_config" "$CONFIG_EXAMPLE_DST" 644
+  if [ -e "$CONFIG_DST" ]; then
+    echo "keeping existing config at $CONFIG_DST"
+  else
+    # 644: operational settings (interface, channel, …) are safe to read.
+    # The root secret lives in $SECRET_DST at 600.
+    install_file "$tmp_config" "$CONFIG_DST" 644
+  fi
+  if [ -e "$SECRET_DST" ]; then
+    echo "keeping existing secret at $SECRET_DST"
+  else
+    install_file "$tmp_secret" "$SECRET_DST" 600
+    echo
+    echo "IMPORTANT: edit $SECRET_DST and replace the placeholder secret."
+    echo "All device pairing credentials are derived from it."
+    echo "config.json is world-readable; the secret file is not."
+  fi
+}
+
+install_file "$ROOT_DIR/komitake" "$KOMITAKE_DST" 755
+install_file "$HOSTAPD_BUILD_OUT" "$HOSTAPD_DST" 755
+install_generated_config
+
+# The systemd unit is installed by a dedicated, self-contained script that
+# embeds the unit text. Pass the resolved binary and config paths through so it
+# writes the correct ExecStart line.
+KOMITAKE_BIN="$KOMITAKE_DST" \
+CONFIG_PATH="$CONFIG_DST" \
+DESTDIR="$DESTDIR" \
+SYSTEMD_UNIT_DIR="$SYSTEMD_UNIT_DIR" \
+  "$ROOT_DIR/scripts/install-systemd.sh"
+
+# Live installs: ensure systemd picks up the unit (always via sudo when needed).
+if [ -z "$DESTDIR" ] && command -v systemctl >/dev/null 2>&1; then
+  if [ "$(id -u)" = "0" ]; then
+    systemctl daemon-reload
+  elif command -v sudo >/dev/null 2>&1; then
+    sudo systemctl daemon-reload
+  else
+    echo "warning: could not daemon-reload (install sudo or re-run as root)" >&2
+  fi
+fi
+
+echo "installed komitake to $KOMITAKE_DST"
+echo "installed patched hostapd to $HOSTAPD_DST"
+echo "installed config to $CONFIG_DIR"

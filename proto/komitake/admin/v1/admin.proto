@@ -1,0 +1,224 @@
+syntax = "proto3";
+
+package komitake.admin.v1;
+
+option go_package = "github.com/Alex4386/komitake/proto/komitake/admin/v1;adminv1";
+
+// AdminService is the local control-plane API between clients (CLI, web, SDK)
+// and the daemon. It is served over a unix socket (or TCP). It covers daemon
+// mode, pairing, connected devices, and Fuji control-plane reads (params /
+// product_code).
+service AdminService {
+  rpc GetState(GetStateRequest) returns (GetStateResponse);
+  rpc SetState(SetStateRequest) returns (SetStateResponse);
+  rpc GetPairingInfo(GetPairingInfoRequest) returns (GetPairingInfoResponse);
+  rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse);
+  rpc WaitForDevice(WaitForDeviceRequest) returns (WaitForDeviceResponse);
+  // GetDeviceParam reads a Fuji control GetParam value for a connected kart.
+  rpc GetDeviceParam(GetDeviceParamRequest) returns (GetDeviceParamResponse);
+  // GetProductCode reads product_code via the control port and refreshes the
+  // cached device serial.
+  rpc GetProductCode(GetProductCodeRequest) returns (GetProductCodeResponse);
+  // SetDrive updates teleop axes over the physical Fuji UDP 5102 channel.
+  rpc SetDrive(SetDriveRequest) returns (SetDriveResponse);
+  // GetDrive returns the last teleop command and verified packet-write status.
+  rpc GetDrive(GetDriveRequest) returns (GetDriveResponse);
+  // SetDriveMode enables or disables teleoperation for one connected kart.
+  rpc SetDriveMode(SetDriveModeRequest) returns (SetDriveModeResponse);
+  // ShutdownKart powers off one connected kart via Fuji Control Shutdown (0x09).
+  rpc ShutdownKart(ShutdownKartRequest) returns (ShutdownKartResponse);
+  // StreamVideo streams complete Annex-B H.264 frames for one connected kart.
+  rpc StreamVideo(StreamVideoRequest) returns (stream StreamVideoResponse);
+}
+
+// State mirrors the daemon lifecycle. STATE_UNSPECIFIED is never sent by the
+// daemon; it exists so an unset field is distinguishable from DOWN.
+enum State {
+  STATE_UNSPECIFIED = 0;
+  STATE_DOWN = 1;
+  STATE_RUNNING = 2;
+  STATE_PAIRING = 3;
+}
+
+// PairingRecord is the pairing-session metadata persisted to pairing.json and
+// surfaced over the API. The seed is equivalent to the network key, so callers
+// must treat it as a secret.
+message PairingRecord {
+  State state = 1;
+  string seed_hex = 2;
+  string ssid = 3;
+  uint32 channel = 4;
+  string generated_at = 5;
+  string file_path = 6;
+}
+
+// WirelessInfo is non-secret AP/runtime networking, safe for diagnostics.
+message WirelessInfo {
+  string interface = 1;
+  string address = 2;
+  string subnet = 3;
+  uint32 channel = 4;
+  string ssid = 5;
+  string hostapd_path = 6;
+}
+
+// DeviceSummary describes a kart whose handshake is currently held open.
+// Serial is the serial number reported by the device (Fuji product_code)
+// when the control port has answered; it may be empty briefly after connect.
+message DeviceSummary {
+  string kind = 1;
+  string ident = 2;
+  string address = 3;
+  string mac_address = 4;
+  optional int32 signal_dbm = 5;
+  string serial = 6;
+  // Battery is the documented HUD bar count from telemetry type 0x01 (0-4).
+  optional int32 battery = 7;
+  // CableConnected is status byte 0 bit 0x01 from telemetry type 0x01.
+  optional bool cable_connected = 8;
+  // DriveArmed is local daemon control-session state.
+  bool drive_armed = 9;
+  Vec3 accel_mps2 = 10;
+  Vec3 gyro_dps = 11;
+  Quat orientation = 12;
+  optional uint32 imu_timer_us = 13;
+}
+
+message Vec3 {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+message Quat {
+  double i = 1;
+  double j = 2;
+  double k = 3;
+  double r = 4;
+}
+
+message GetStateRequest {}
+message GetStateResponse {
+  State state = 1;
+  PairingRecord pairing = 2;
+  WirelessInfo wireless = 3;
+}
+
+message SetStateRequest {
+  State state = 1;
+}
+message SetStateResponse {
+  State state = 1;
+  PairingRecord pairing = 2;
+  WirelessInfo wireless = 3;
+}
+
+message GetPairingInfoRequest {}
+message GetPairingInfoResponse {
+  PairingRecord pairing = 1;
+}
+
+message ListDevicesRequest {}
+message ListDevicesResponse {
+  repeated DeviceSummary devices = 1;
+}
+
+message WaitForDeviceRequest {
+  string ident = 1;
+}
+message WaitForDeviceResponse {
+  DeviceSummary device = 1;
+}
+
+// GetDeviceParamRequest selects a connected kart (ident or serial / unique
+// prefix, same rules as CLI device selectors) and a Fuji param name.
+message GetDeviceParamRequest {
+  string selector = 1;
+  string name = 2;
+}
+message GetDeviceParamResponse {
+  DeviceSummary device = 1;
+  bytes value = 2;
+}
+
+message GetProductCodeRequest {
+  string selector = 1;
+}
+
+// ProductCode is the decoded Fuji product_code parameter.
+message ProductCode {
+  uint32 unk1 = 1;
+  uint32 character = 2;
+  uint32 unk2 = 3;
+  string serial = 4;
+}
+
+message GetProductCodeResponse {
+  DeviceSummary device = 1;
+  ProductCode product_code = 2;
+}
+
+message SetDriveRequest {
+  string selector = 1;
+  double steer = 2;
+  double throttle = 3;
+  // Brake controls the physical kart brake-light byte independently of throttle.
+  double brake = 4;
+}
+
+message DriveState {
+  string device_id = 1;
+  double steer = 2;
+  double throttle = 3;
+  // Brake is the requested physical brake-light state.
+  double brake = 4;
+  bool applied = 5;
+  string updated_at = 6;
+  string reason = 7;
+}
+
+message SetDriveResponse {
+  DriveState drive = 1;
+}
+
+message GetDriveRequest {
+  string selector = 1;
+}
+
+message GetDriveResponse {
+  DriveState drive = 1;
+}
+
+message SetDriveModeRequest {
+  string selector = 1;
+  bool enabled = 2;
+}
+
+message SetDriveModeResponse {
+  DeviceSummary device = 1;
+}
+
+message ShutdownKartRequest {
+  string selector = 1;
+}
+
+message ShutdownKartResponse {
+  DeviceSummary device = 1;
+}
+
+message StreamVideoRequest {
+  string selector = 1;
+  // FreshKeyFrame skips the cached GOP and starts at the next live IDR.
+  bool fresh_key_frame = 2;
+}
+
+message StreamVideoResponse {
+  string device_id = 1;
+  uint64 sequence = 2;
+  uint64 metadata_0 = 3;
+  uint64 metadata_1 = 4;
+  uint64 metadata_2 = 5;
+  bool key_frame = 6;
+  bytes annex_b = 7;
+  bool discontinuity = 8;
+}

@@ -1,0 +1,45 @@
+{
+  "name": "komitake-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
+    "@radix-ui/react-slot": "^1.1.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "i18next": "^26.4.1",
+    "i18next-browser-languagedetector": "^8.2.1",
+    "lucide-react": "^0.469.0",
+    "next-themes": "^0.4.6",
+    "pretendard": "^1.3.9",
+    "pretendard-jp": "^1.3.9",
+    "qrcode": "^1.5.4",
+    "radix-ui": "^1.6.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-i18next": "^17.0.13",
+    "react-resizable-panels": "^4.12.3",
+    "react-router-dom": "^7.18.3",
+    "shadcn": "^4.19.0",
+    "sonner": "^2.0.8",
+    "tailwind-merge": "^2.6.0",
+    "tw-animate-css": "^1.4.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.13",
+    "@types/node": "^22.10.5",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7"
+  }
+}

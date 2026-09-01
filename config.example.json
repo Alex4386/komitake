@@ -1,0 +1,29 @@
+{
+  "socket": {
+    "bind": "unix:/run/komitake.sock",
+    "chmod": "0600"
+  },
+  "web": {
+    "bind": "127.0.0.1:8080",
+    "tls": {
+      "enabled": false,
+      "cert_file": "",
+      "key_file": ""
+    }
+  },
+  "video": {
+    "hwaccel": "auto"
+  },
+  "pairing_file": "/etc/komitake/pairing.json",
+  "autostart": true,
+  "wireless": {
+    "interface": "wlan0",
+    "address": "192.168.137.1/24",
+    "channel": 1,
+    "hostapd_path": "./hostapd"
+  },
+  "rcd": {
+    "name": "Komitake",
+    "versions": [2, 1]
+  }
+}
