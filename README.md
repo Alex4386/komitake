@@ -21,9 +21,7 @@ It emulates the <code>"game"</code>'s <code>FujiControl</code> classes and sever
 - Also keeps up the LSP link up and ingest live camera feed
 - Drive, telemetry, and live camera from the PC
 - Optional web UI (REST / WebSocket / WebRTC) and a Go client SDK with control/pair interface
-
-Live camera formats are in [docs/fuji-video.md](docs/fuji-video.md). 
-
+- 
 ## Prerequisites
 
 - Go 1.26+
