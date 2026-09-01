@@ -10,7 +10,7 @@ Get your Fuji kart on your PC and driving in a few minutes.
 
 * a Linux PC to host Komitake
 * a Wi-Fi adapter that supports `SoftAP` mode (creates its own kart network)
-* a Fuji kart
+* a kart for "Build your Circuit at Home" game (the "Fuji" one, obviously)
 * a web browser on the same PC
 * an Xbox / PlayStation / generic gamepad (optional, but this guide assumes you want controls that uses one)
 

@@ -18,7 +18,7 @@ If any step sounds painful, it probably is. A bare-metal Linux PC or a Raspberry
 
 Figure out which chipset you have (`lsusb`, the box, vendor docs) and which in-tree driver + firmware blob it needs. This guide uses **RTL8192EU** as the worked example because it is common. Your adapter may differ.
 
-**Already built the kernel and just need to bring Wi-Fi up?** See [On startup](#on-startup).
+**Already built the kernel and just need to bring Wi-Fi up?** See [On startup](#4-on-startup).
 
 ## Overview
 

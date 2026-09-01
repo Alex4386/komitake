@@ -5,7 +5,7 @@
 
 <a href="https://ja.wikipedia.org/wiki/%E5%AF%8C%E5%A3%AB%E5%B1%B1#%E5%9C%B0%E8%B3%AA%E5%AD%A6%E4%B8%8A%E3%81%AE%E5%AF%8C%E5%A3%AB%E5%B1%B1">
   <code>Komitake</code> <sup>(小御岳)</sup>
-</a> is a Go daemon and CLI that provides the Wi-Fi connectivity plane for a companion RC kart (Fuji).
+</a> is a Go daemon and CLI that provides the Wi-Fi connectivity plane for a companion RC kart used by a "build a Circuit at Home" kart-racing game (Fuji).
 It emulates the <code>"game"</code>'s <code>FujiControl</code> classes and several <code>LSP</code> and <code>MoLive2</code> demuxing into a one bundled daemon, allowing you to control and manage connection.  
 <br />
 <br />
@@ -57,7 +57,7 @@ git submodule update --init --recursive
 Then:
 
 ```sh
-./build.sh                          # patched hostapd → ./hostapd
+./build.sh                          # patched hostapd -> ./hostapd
 go generate ./internal/wireless/lp2p # OpenKart lp2p nonce table (network)
 ./scripts/rebuild-webui.sh          # optional; embeds UI under internal/web/frontend/dist
 go build -o komitake ./cmd/komitake
@@ -118,7 +118,7 @@ For Quickstart, see [QUICKSTART.md](./QUICKSTART.md) for how to get it running i
   A Linux PC, a Wi-Fi adapter that supports SoftAP mode, and a Fuji kart. See [QUICKSTART.md](./QUICKSTART.md) for a step-by-step setup.
 
 - **Does it run on macOS or Windows?**  
-  The daemon (access point, pairing, drive, camera transcode) is Linux-only today because it drives a patched `hostapd` and configures the wireless interface directly. You can run client commands (`komitake status`, `komitake web`, …) from another OS by pointing `--address` at a Linux host with `socket.bind` set to TCP.  
+  The daemon (access point, pairing, drive, camera transcode) is Linux-only today because it drives a patched `hostapd` and configures the wireless interface directly. You can run client commands (`komitake status`, `komitake web`, ...) from another OS by pointing `--address` at a Linux host with `socket.bind` set to TCP.  
   You can technically try with WSL2, but it is not supported. continue at your own risk. [./docs/wsl2-setup.md](./docs/wsl2-setup.md)
 
 - **I want to know more about LSP and MoLive2!**  
