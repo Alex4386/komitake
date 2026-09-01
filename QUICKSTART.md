@@ -186,7 +186,7 @@ Keyboard works too: **W** / **S** or arrow keys to move, **Space** to center the
 * **More karts?**  
   Pair each one once; switch between them from the kart picker in the top bar.  
   Due to SoftAP limitation and "fuji" pairing session, when in pairing mode, other karts disconnects until pairing mode ends.
-* **Unknown disconnects?**
+* **Unknown disconnects?**  
   If you are using NetworkManager, that might be the reason that disconnects may occur, remove your interface from managed interfaces.  
   ```sh
   sudo nmcli device set <iface> managed no
