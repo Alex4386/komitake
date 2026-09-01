@@ -11,8 +11,7 @@ It emulates the <code>"game"</code>'s <code>FujiControl</code> classes and sever
 <br />
   
 > [!TIP]  
-> **Looking for how to use kart on your PC?**  
-> [Click here](./QUICKSTART.md)
+> **Looking for how to use kart on your PC?** [Click here](./QUICKSTART.md)
 
 ## What does it do?
 
