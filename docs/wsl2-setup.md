@@ -80,7 +80,7 @@ make menuconfig   # enable your Wi-Fi driver; double-check firmware options belo
 
 ### Wireless stack (everyone)
 
-Build these as **modules** (`M`), not built-in (`Y`). You load them with `modprobe` after each WSL start (see [On startup](#on-startup)).
+Build these as **modules** (`M`), not built-in (`Y`). You load them with `modprobe` after each WSL start (see [On startup](#4-on-startup)).
 
 | Location | Option | Build as |
 |----------|--------|----------|
@@ -236,14 +236,14 @@ WSL-specific reminders:
   ```sh
   sudo nmcli device set wlan0 managed no
   ```
-* Re-attach the USB device and run the [On startup](#on-startup) `modprobe` steps after each `wsl --shutdown` or Windows reboot.
+* Re-attach the USB device and run the [On startup](#4-on-startup) `modprobe` steps after each `wsl --shutdown` or Windows reboot.
 
 ## Troubleshooting
 
 | Symptom | Things to try |
 |---------|----------------|
 | `usbipd attach` fails | Run PowerShell as Administrator; `usbipd bind` first; only one WSL instance should own the device |
-| No wireless adapter after attach | [On startup](#on-startup) `modprobe` chain; `dmesg`, `lsusb`, `lsmod`; confirm driver built as **`M`** and `make modules_install` ran; firmware embedded (`EXTRA_FIRMWARE`, `FW_LOADER_STANDALONE` off) |
+| No wireless adapter after attach | [On startup](#4-on-startup) `modprobe` chain; `dmesg`, `lsusb`, `lsmod`; confirm driver built as **`M`** and `make modules_install` ran; firmware embedded (`EXTRA_FIRMWARE`, `FW_LOADER_STANDALONE` off) |
 | `iw` missing | `sudo apt install iw` |
 | `hostapd` / AP won't start | `iw list` AP support; try another channel (`komitake set --wireless-channel=6`); check `journalctl -u komitake.service -e` |
 | Still on stock kernel | `.wslconfig` path must use `\\`, `wsl --shutdown` after edits, `uname -r` to verify |
