@@ -16,8 +16,7 @@ Get your Fuji kart on your PC and driving in a few minutes.
 
 > [!NOTE]  
 > **But I don't have Linux PC! I only have Windows!**   
-> You can at least _"try"_ with **WSL2** with USB Wi-Fi adapter. but this is not supported.  
-> [[Setup with WSL2]](./docs/wsl2-setup.md)
+> You can at least _"try"_ with **WSL2** with USB Wi-Fi adapter. but this is not supported. [Setup with WSL2](./docs/wsl2-setup.md)
 
 ## One-time install
 
