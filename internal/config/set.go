@@ -36,6 +36,8 @@ type SettingsChanges struct {
 	VideoFFmpegArgsInput  *[]string
 	VideoFFmpegArgsOutput *[]string
 
+	WebRTCSTUNServers *[]string
+
 	RCDName *string
 
 	// Secret is written to the sibling secret file (mode 0600), not config.json.
@@ -233,6 +235,11 @@ func validateSettingsChanges(existing File, changes SettingsChanges) error {
 			return err
 		}
 	}
+	if changes.WebRTCSTUNServers != nil {
+		if err := ValidateWebRTC(WebRTCFile{STUNServers: *changes.WebRTCSTUNServers}); err != nil {
+			return err
+		}
+	}
 	if (changes.WirelessSSID != nil) != (changes.WirelessPSK != nil) {
 		return fmt.Errorf("wireless.ssid and wireless.psk must be set together")
 	}
@@ -383,6 +390,19 @@ func applySettingsChanges(raw map[string]any, changes SettingsChanges) {
 			delete(videoObject, "ffmpeg_args")
 		} else {
 			videoObject["ffmpeg_args"] = argsObject
+		}
+	}
+	if changes.WebRTCSTUNServers != nil {
+		servers := WebRTCFile{STUNServers: *changes.WebRTCSTUNServers}.NormalizedSTUNServers()
+		if len(servers) == 0 {
+			deleteNested(raw, []string{"webrtc", "stun_servers"})
+		} else {
+			webrtcObject := ensureNestedMap(raw, []string{"webrtc"})
+			list := make([]any, len(servers))
+			for index, server := range servers {
+				list[index] = server
+			}
+			webrtcObject["stun_servers"] = list
 		}
 	}
 	if changes.RCDName != nil {

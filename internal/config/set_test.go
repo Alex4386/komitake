@@ -123,6 +123,7 @@ func TestWriteServiceSettingsStillMigratesLegacyKeys(t *testing.T) {
 		WebFile{Bind: "0.0.0.0:8080", TLS: WebTLSFile{Enabled: true, CertFile: "/etc/komitake/web.crt", KeyFile: "/etc/komitake/web.key"}},
 		SocketFile{Bind: "unix:/tmp/komitake.sock", Chmod: "0770"},
 		VideoFile{},
+		WebRTCFile{},
 	)
 	if err != nil {
 		t.Fatal(err)

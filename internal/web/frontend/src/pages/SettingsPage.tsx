@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Globe, Lock, Plug, SlidersHorizontal, Video } from "lucide-react";
+import { ArrowLeft, Globe, Lock, Plug, Radio, SlidersHorizontal, Video } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -22,7 +22,7 @@ import { api, type ServiceSettings } from "@/lib/api";
 import { brandDocumentTitle } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
-type SettingsSection = "web" | "video" | "tls" | "socket";
+type SettingsSection = "web" | "video" | "webrtc" | "tls" | "socket";
 
 type LocationState = {
   from?: string;
@@ -78,6 +78,7 @@ export function SettingsPage() {
   const [videoFFmpegProfile, setVideoFFmpegProfile] = useState("");
   const [videoFFmpegArgsInput, setVideoFFmpegArgsInput] = useState("");
   const [videoFFmpegArgsOutput, setVideoFFmpegArgsOutput] = useState("");
+  const [webrtcStunServers, setWebrtcStunServers] = useState("");
   const [metadata, setMetadata] = useState<ServiceSettings | null>(null);
 
   const backTarget = from && from !== "/settings" ? from : "/";
@@ -89,6 +90,7 @@ export function SettingsPage() {
     () => [
       { id: "web" as const, label: t("settings.navWeb"), icon: Globe },
       { id: "video" as const, label: t("settings.navVideo"), icon: Video },
+      { id: "webrtc" as const, label: t("settings.navWebRTC"), icon: Radio },
       { id: "tls" as const, label: t("settings.navTls"), icon: Lock },
       { id: "socket" as const, label: t("settings.navSocket"), icon: Plug },
     ],
@@ -118,6 +120,7 @@ export function SettingsPage() {
         setVideoFFmpegProfile(settings.video?.ffmpeg_profile ?? "");
         setVideoFFmpegArgsInput(argsToText(settings.video?.ffmpeg_args?.input));
         setVideoFFmpegArgsOutput(argsToText(settings.video?.ffmpeg_args?.output));
+        setWebrtcStunServers(argsToText(settings.webrtc?.stun_servers));
       } catch (error) {
         toast.error((error as Error).message);
         navigate(backTarget);
@@ -150,6 +153,9 @@ export function SettingsPage() {
             output: textToArgs(videoFFmpegArgsOutput),
           },
         },
+        webrtc: {
+          stun_servers: textToArgs(webrtcStunServers),
+        },
       });
       setMetadata(settings);
       toast.success(t("settings.saved"));
@@ -164,6 +170,7 @@ export function SettingsPage() {
   const sectionMeta = {
     web: t("settings.sectionWebTitle"),
     video: t("settings.sectionVideoTitle"),
+    webrtc: t("settings.sectionWebRTCTitle"),
     tls: t("settings.sectionTlsTitle"),
     socket: t("settings.sectionSocketTitle"),
   }[section];
@@ -322,6 +329,20 @@ export function SettingsPage() {
                         </>
                       )}
                     </>
+                  )}
+
+                  {section === "webrtc" && (
+                    <SettingsRow label={t("settings.webrtcStunServersLabel")} hint={t("settings.webrtcStunServersHint")}>
+                      <textarea
+                        id="webrtc-stun-servers"
+                        className={cn(fieldClass, "min-h-24 resize-y py-2 font-mono text-xs")}
+                        value={webrtcStunServers}
+                        placeholder={"stun:stun.l.google.com:19302"}
+                        onChange={(event) => setWebrtcStunServers(event.target.value)}
+                        disabled={busy}
+                        spellCheck={false}
+                      />
+                    </SettingsRow>
                   )}
 
                   {section === "tls" && (

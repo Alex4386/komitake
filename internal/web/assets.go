@@ -54,7 +54,7 @@ func Handler(client Client, options ...Options) http.Handler {
 	}
 	RegisterAPI(mux, client, resolvedOptions)
 	registerRealtime(mux, client, hub)
-	registerWebRTC(mux, client)
+	registerWebRTC(mux, client, resolvedOptions.ConfigPath)
 	registerUIRoutes(mux)
 	return mux
 }

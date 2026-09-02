@@ -41,6 +41,7 @@ type File struct {
 	Web    WebFile    `json:"web"`
 	Socket SocketFile `json:"socket"`
 	Video  VideoFile  `json:"video"`
+	WebRTC WebRTCFile `json:"webrtc"`
 
 	// Legacy flat keys are accepted on read and removed on settings rewrites.
 	Address     string `json:"address,omitempty"`
@@ -219,6 +220,7 @@ type Runtime struct {
 	ServerInfo    rcd.ServerInfo
 	HasGroupInfo  bool
 	Video         VideoFile
+	WebRTC        WebRTCFile
 }
 
 type PersistentState struct {
@@ -432,6 +434,10 @@ func buildRuntime(file File, configPath string, statePath string, opts Options, 
 	if err := ValidateVideo(video); err != nil {
 		return Runtime{}, PersistentState{}, false, err
 	}
+	webRTC := file.WebRTC
+	if err := ValidateWebRTC(webRTC); err != nil {
+		return Runtime{}, PersistentState{}, false, err
+	}
 
 	return Runtime{
 		ConfigPath:    configPath,
@@ -450,6 +456,7 @@ func buildRuntime(file File, configPath string, statePath string, opts Options, 
 		ServerInfo:    serverInfo,
 		HasGroupInfo:  hasGroupInfo,
 		Video:         video,
+		WebRTC:        webRTC,
 	}, nextState, dirty, nil
 }
 

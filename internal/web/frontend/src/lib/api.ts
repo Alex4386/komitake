@@ -100,15 +100,21 @@ export interface VideoSettings {
   ffmpeg_args?: VideoFFmpegArgsSettings;
 }
 
+export interface WebRTCSettings {
+  stun_servers?: string[];
+}
+
 export interface ServiceSettings {
   web: WebSettings;
   socket: { bind?: string; chmod?: string };
   video?: VideoSettings;
+  webrtc?: WebRTCSettings;
   config_path?: string;
   defaults: {
     web: WebSettings;
     socket: { bind?: string; chmod?: string };
     video?: VideoSettings;
+    webrtc?: WebRTCSettings;
   };
 }
 
@@ -153,7 +159,7 @@ export const api = {
       method: "POST",
     }),
   getSettings: () => req<ServiceSettings>("/v1/settings"),
-  putSettings: (body: { web: WebSettings; socket: { bind?: string; chmod?: string }; video: VideoSettings }) =>
+  putSettings: (body: { web: WebSettings; socket: { bind?: string; chmod?: string }; video: VideoSettings; webrtc: WebRTCSettings }) =>
     req<ServiceSettings>("/v1/settings", { method: "PUT", body: JSON.stringify(body) }),
 };
 

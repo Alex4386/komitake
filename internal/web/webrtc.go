@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Alex4386/komitake/internal/config"
 	"github.com/Alex4386/komitake/pkg/komitake"
 
 	"github.com/pion/interceptor"
@@ -23,13 +24,57 @@ type webRTCOffer struct {
 	SDP  string `json:"sdp"`
 }
 
-func registerWebRTC(mux *http.ServeMux, client Client) {
+type iceServerDTO struct {
+	URLs []string `json:"urls"`
+}
+
+type webRTCConfigDTO struct {
+	ICEServers []iceServerDTO `json:"ice_servers"`
+}
+
+func registerWebRTC(mux *http.ServeMux, client Client, configPath string) {
 	mux.HandleFunc("POST /v1/karts/by-id/{id}/webrtc", func(writer http.ResponseWriter, request *http.Request) {
-		serveWebRTCOffer(writer, request, client, request.PathValue("id"))
+		serveWebRTCOffer(writer, request, client, configPath, request.PathValue("id"))
+	})
+	mux.HandleFunc("GET /v1/webrtc/config", func(writer http.ResponseWriter, request *http.Request) {
+		serveWebRTCConfig(writer, configPath)
 	})
 }
 
-func serveWebRTCOffer(writer http.ResponseWriter, request *http.Request, client Client, selector string) {
+// webRTCConfiguration reads the configured STUN servers and turns them into a
+// pion Configuration. Missing or unreadable config yields an empty (host-only)
+// configuration so same-segment viewing keeps working.
+func webRTCConfiguration(configPath string) webrtc.Configuration {
+	servers := webRTCSTUNServers(configPath)
+	if len(servers) == 0 {
+		return webrtc.Configuration{}
+	}
+	return webrtc.Configuration{
+		ICEServers: []webrtc.ICEServer{{URLs: servers}},
+	}
+}
+
+func webRTCSTUNServers(configPath string) []string {
+	settings, err := config.ReadServiceSettings(configPath)
+	if err != nil {
+		// Fall back to the built-in default so NAT traversal still works when
+		// config is unreadable.
+		return config.WebRTCFile{}.ResolvedSTUNServers()
+	}
+	return settings.WebRTC.ResolvedSTUNServers()
+}
+
+func serveWebRTCConfig(writer http.ResponseWriter, configPath string) {
+	servers := webRTCSTUNServers(configPath)
+	out := webRTCConfigDTO{ICEServers: []iceServerDTO{}}
+	if len(servers) > 0 {
+		out.ICEServers = append(out.ICEServers, iceServerDTO{URLs: servers})
+	}
+	writer.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(writer).Encode(out)
+}
+
+func serveWebRTCOffer(writer http.ResponseWriter, request *http.Request, client Client, configPath, selector string) {
 	kart, err := resolveKart(request.Context(), client, selector)
 	if err != nil {
 		writeResolveError(writer, err)
@@ -46,7 +91,7 @@ func serveWebRTCOffer(writer http.ResponseWriter, request *http.Request, client 
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	peer, err := api.NewPeerConnection(webrtc.Configuration{})
+	peer, err := api.NewPeerConnection(webRTCConfiguration(configPath))
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return

@@ -585,7 +585,7 @@ func TestWebRTCOfferStreamsSharedH264Track(t *testing.T) {
 		videoStreamOptions: make(chan komitake.VideoStreamOptions, 1),
 	}
 	mux := http.NewServeMux()
-	registerWebRTC(mux, client)
+	registerWebRTC(mux, client, "")
 	server := httptest.NewServer(mux)
 	defer server.Close()
 	browser, err := webrtc.NewPeerConnection(webrtc.Configuration{})
@@ -682,7 +682,7 @@ func TestWebRTCOfferRejectsInvalidSDP(t *testing.T) {
 	t.Parallel()
 	client := &fakeClient{karts: []komitake.Kart{{Kind: "Fuji", Ident: "aabb"}}}
 	mux := http.NewServeMux()
-	registerWebRTC(mux, client)
+	registerWebRTC(mux, client, "")
 	server := httptest.NewServer(mux)
 	defer server.Close()
 	response, err := http.Post(server.URL+"/v1/karts/by-id/aabb/webrtc", "application/json", strings.NewReader(`{"type":"offer","sdp":"bad"}`))

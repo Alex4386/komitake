@@ -14,6 +14,9 @@
   "video": {
     "hwaccel": "auto"
   },
+  "webrtc": {
+    "stun_servers": []
+  },
   "pairing_file": "/etc/komitake/pairing.json",
   "autostart": true,
   "wireless": {

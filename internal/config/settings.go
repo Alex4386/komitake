@@ -13,6 +13,7 @@ type ServiceSettings struct {
 	Web        WebFile                 `json:"web"`
 	Socket     SocketFile              `json:"socket"`
 	Video      VideoFile               `json:"video"`
+	WebRTC     WebRTCFile              `json:"webrtc"`
 	ConfigPath string                  `json:"config_path,omitempty"`
 	Defaults   ServiceSettingsDefaults `json:"defaults"`
 }
@@ -21,6 +22,7 @@ type ServiceSettingsDefaults struct {
 	Web    WebFile    `json:"web"`
 	Socket SocketFile `json:"socket"`
 	Video  VideoFile  `json:"video"`
+	WebRTC WebRTCFile `json:"webrtc"`
 }
 
 func ParseSocketPerms(raw string) (os.FileMode, error) {
@@ -101,13 +103,14 @@ func ReadServiceSettings(configPath string) (ServiceSettings, error) {
 	if out.Video.NormalizedHwaccel() == "" {
 		out.Video.Hwaccel = VideoHwaccelAuto
 	}
+	out.WebRTC.STUNServers = file.WebRTC.NormalizedSTUNServers()
 	return out, nil
 }
 
 // WriteServiceSettings patches web.*, socket.*, and video.* while preserving
 // secrets, wireless/RCD configuration, and unknown future fields. Legacy keys
 // are migrated and removed when the file is rewritten.
-func WriteServiceSettings(configPath string, web WebFile, socket SocketFile, video VideoFile) (ServiceSettings, error) {
+func WriteServiceSettings(configPath string, web WebFile, socket SocketFile, video VideoFile, webrtc WebRTCFile) (ServiceSettings, error) {
 	path, err := resolveExistingConfigPath(configPath)
 	if err != nil {
 		return ServiceSettings{}, err
@@ -131,6 +134,7 @@ func WriteServiceSettings(configPath string, web WebFile, socket SocketFile, vid
 	ffmpegProfile := video.NormalizedFFmpegProfile()
 	ffmpegArgsInput := append([]string(nil), video.FFmpegArgs.Input...)
 	ffmpegArgsOutput := append([]string(nil), video.FFmpegArgs.Output...)
+	stunServers := webrtc.NormalizedSTUNServers()
 	changes := SettingsChanges{
 		WebBind:               &webBind,
 		WebTLSEnabled:         &webTLSEnabled,
@@ -143,6 +147,7 @@ func WriteServiceSettings(configPath string, web WebFile, socket SocketFile, vid
 		VideoFFmpegProfile:    &ffmpegProfile,
 		VideoFFmpegArgsInput:  &ffmpegArgsInput,
 		VideoFFmpegArgsOutput: &ffmpegArgsOutput,
+		WebRTCSTUNServers:     &stunServers,
 	}
 	if err := ApplySettingsChanges(path, changes); err != nil {
 		return ServiceSettings{}, err
