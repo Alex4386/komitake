@@ -124,6 +124,8 @@ func TestWriteServiceSettingsStillMigratesLegacyKeys(t *testing.T) {
 		SocketFile{Bind: "unix:/tmp/komitake.sock", Chmod: "0770"},
 		VideoFile{},
 		WebRTCFile{},
+		nil,
+		nil,
 	)
 	if err != nil {
 		t.Fatal(err)

@@ -29,6 +29,12 @@ service AdminService {
   rpc ShutdownKart(ShutdownKartRequest) returns (ShutdownKartResponse);
   // StreamVideo streams complete Annex-B H.264 frames for one connected kart.
   rpc StreamVideo(StreamVideoRequest) returns (stream StreamVideoResponse);
+  // ReloadDaemon re-reads config.json and re-applies settings that can change
+  // live, without restarting the process.
+  rpc ReloadDaemon(ReloadDaemonRequest) returns (ReloadDaemonResponse);
+  // RestartDaemon stops the daemon so the process supervisor (systemd) starts a
+  // fresh instance. Requires the daemon to run under a supervisor.
+  rpc RestartDaemon(RestartDaemonRequest) returns (RestartDaemonResponse);
 }
 
 // State mirrors the daemon lifecycle. STATE_UNSPECIFIED is never sent by the
@@ -222,3 +228,11 @@ message StreamVideoResponse {
   bytes annex_b = 7;
   bool discontinuity = 8;
 }
+
+message ReloadDaemonRequest {}
+message ReloadDaemonResponse {
+  State state = 1;
+}
+
+message RestartDaemonRequest {}
+message RestartDaemonResponse {}

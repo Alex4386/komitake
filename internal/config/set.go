@@ -17,6 +17,7 @@ type SettingsChanges struct {
 	WebTLSEnabled  *bool
 	WebTLSCertFile *string
 	WebTLSKeyFile  *string
+	WebAllowConfig *bool
 	SocketBind     *string
 	SocketChmod    *string
 
@@ -314,6 +315,18 @@ func applySettingsChanges(raw map[string]any, changes SettingsChanges) {
 			webObject["tls"] = tlsObject
 		}
 		raw["web"] = webObject
+	}
+	if changes.WebAllowConfig != nil {
+		webObject := ensureNestedMap(raw, []string{"web"})
+		if *changes.WebAllowConfig {
+			// true is the default; drop the key to keep config.json minimal.
+			delete(webObject, "allow_config")
+			if len(webObject) == 0 {
+				delete(raw, "web")
+			}
+		} else {
+			webObject["allow_config"] = false
+		}
 	}
 	if changes.SocketBind != nil {
 		setNestedString(raw, []string{"socket", "bind"}, strings.TrimSpace(*changes.SocketBind))

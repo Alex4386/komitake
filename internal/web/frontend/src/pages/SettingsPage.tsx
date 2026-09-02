@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Globe, Lock, Plug, Radio, SlidersHorizontal, Video } from "lucide-react";
+import { ArrowLeft, Globe, Lock, Plug, Radio, RotateCcw, RefreshCw, SlidersHorizontal, Video, Wifi } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -22,7 +22,7 @@ import { api, type ServiceSettings } from "@/lib/api";
 import { brandDocumentTitle } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
-type SettingsSection = "web" | "video" | "webrtc" | "tls" | "socket";
+type SettingsSection = "general" | "web" | "video" | "webrtc" | "wireless" | "tls" | "socket";
 
 type LocationState = {
   from?: string;
@@ -64,7 +64,7 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as LocationState | null)?.from;
-  const [section, setSection] = useState<SettingsSection>("web");
+  const [section, setSection] = useState<SettingsSection>("general");
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [webBind, setWebBind] = useState("");
@@ -79,7 +79,18 @@ export function SettingsPage() {
   const [videoFFmpegArgsInput, setVideoFFmpegArgsInput] = useState("");
   const [videoFFmpegArgsOutput, setVideoFFmpegArgsOutput] = useState("");
   const [webrtcStunServers, setWebrtcStunServers] = useState("");
+  const [autostart, setAutostart] = useState(true);
+  const [rcdName, setRcdName] = useState("");
+  const [pairingFile, setPairingFile] = useState("");
+  const [wirelessInterface, setWirelessInterface] = useState("");
+  const [wirelessAddress, setWirelessAddress] = useState("");
+  const [wirelessChannel, setWirelessChannel] = useState("");
+  const [wirelessHostapdPath, setWirelessHostapdPath] = useState("");
+  const [allowConfig, setAllowConfig] = useState(true);
+  const [lifecycleBusy, setLifecycleBusy] = useState(false);
   const [metadata, setMetadata] = useState<ServiceSettings | null>(null);
+
+  const readOnly = !allowConfig;
 
   const backTarget = from && from !== "/settings" ? from : "/";
   const backLabel = from?.startsWith("/karts/")
@@ -88,9 +99,11 @@ export function SettingsPage() {
 
   const navItems = useMemo(
     () => [
+      { id: "general" as const, label: t("settings.navGeneral"), icon: SlidersHorizontal },
       { id: "web" as const, label: t("settings.navWeb"), icon: Globe },
       { id: "video" as const, label: t("settings.navVideo"), icon: Video },
       { id: "webrtc" as const, label: t("settings.navWebRTC"), icon: Radio },
+      { id: "wireless" as const, label: t("settings.navWireless"), icon: Wifi },
       { id: "tls" as const, label: t("settings.navTls"), icon: Lock },
       { id: "socket" as const, label: t("settings.navSocket"), icon: Plug },
     ],
@@ -121,6 +134,14 @@ export function SettingsPage() {
         setVideoFFmpegArgsInput(argsToText(settings.video?.ffmpeg_args?.input));
         setVideoFFmpegArgsOutput(argsToText(settings.video?.ffmpeg_args?.output));
         setWebrtcStunServers(argsToText(settings.webrtc?.stun_servers));
+        setAllowConfig(settings.allow_config ?? true);
+        setAutostart(settings.general?.autostart ?? true);
+        setRcdName(settings.general?.rcd_name ?? "");
+        setPairingFile(settings.general?.pairing_file ?? "");
+        setWirelessInterface(settings.wireless?.interface ?? "");
+        setWirelessAddress(settings.wireless?.address ?? "");
+        setWirelessChannel(settings.wireless?.channel ? String(settings.wireless.channel) : "");
+        setWirelessHostapdPath(settings.wireless?.hostapd_path ?? "");
       } catch (error) {
         toast.error((error as Error).message);
         navigate(backTarget);
@@ -156,6 +177,17 @@ export function SettingsPage() {
         webrtc: {
           stun_servers: textToArgs(webrtcStunServers),
         },
+        general: {
+          autostart: autostart,
+          rcd_name: rcdName.trim(),
+          pairing_file: pairingFile.trim(),
+        },
+        wireless: {
+          interface: wirelessInterface.trim(),
+          address: wirelessAddress.trim(),
+          channel: wirelessChannel.trim() ? Number(wirelessChannel.trim()) : 0,
+          hostapd_path: wirelessHostapdPath.trim(),
+        },
       });
       setMetadata(settings);
       toast.success(t("settings.saved"));
@@ -166,8 +198,34 @@ export function SettingsPage() {
     }
   }
 
+  async function reloadDaemon() {
+    setLifecycleBusy(true);
+    try {
+      await api.reloadDaemon();
+      toast.success(t("settings.reloadRequested"));
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setLifecycleBusy(false);
+    }
+  }
+
+  async function restartDaemon() {
+    setLifecycleBusy(true);
+    try {
+      await api.restartDaemon();
+      toast.success(t("settings.restartRequested"));
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setLifecycleBusy(false);
+    }
+  }
+
   const configPath = metadata?.config_path ?? t("settings.configJson");
   const sectionMeta = {
+    general: t("settings.sectionGeneralTitle"),
+    wireless: t("settings.sectionWirelessTitle"),
     web: t("settings.sectionWebTitle"),
     video: t("settings.sectionVideoTitle"),
     webrtc: t("settings.sectionWebRTCTitle"),
@@ -234,7 +292,100 @@ export function SettingsPage() {
                 <div className="border-b px-4 py-2 text-xs text-muted-foreground md:px-5">
                   {t("settings.savedTo", { path: configPath })}
                 </div>
+                {readOnly && (
+                  <div className="flex items-start gap-2 border-b bg-muted/40 px-4 py-2.5 text-xs text-muted-foreground md:px-5">
+                    <Lock className="mt-0.5 size-3.5 shrink-0" />
+                    <span>{t("settings.readOnlyNotice")}</span>
+                  </div>
+                )}
+                <fieldset disabled={readOnly} className="contents">
                 <div className="px-4 md:px-5">
+                  {section === "general" && (
+                    <>
+                      <SettingsRow label={t("settings.autostartLabel")} hint={t("settings.autostartHint")}>
+                        <Switch
+                          checked={autostart}
+                          onCheckedChange={setAutostart}
+                          disabled={busy}
+                          aria-label={t("settings.autostartLabel")}
+                        />
+                      </SettingsRow>
+                      <SettingsRow label={t("settings.rcdNameLabel")} hint={t("settings.rcdNameHint")}>
+                        <Input
+                          id="rcd-name"
+                          value={rcdName}
+                          placeholder="Komitake"
+                          onChange={(event) => setRcdName(event.target.value)}
+                          disabled={busy}
+                          autoComplete="off"
+                          spellCheck={false}
+                        />
+                      </SettingsRow>
+                      <SettingsRow label={t("settings.pairingFileLabel")} hint={t("settings.pairingFileHint")}>
+                        <Input
+                          id="pairing-file"
+                          value={pairingFile}
+                          placeholder="/etc/komitake/pairing.json"
+                          onChange={(event) => setPairingFile(event.target.value)}
+                          disabled={busy}
+                          autoComplete="off"
+                          spellCheck={false}
+                        />
+                      </SettingsRow>
+                    </>
+                  )}
+
+                  {section === "wireless" && (
+                    <>
+                      <SettingsRow label={t("settings.wirelessInterfaceLabel")} hint={t("settings.wirelessInterfaceHint")}>
+                        <Input
+                          id="wireless-interface"
+                          value={wirelessInterface}
+                          placeholder="wlan0"
+                          onChange={(event) => setWirelessInterface(event.target.value)}
+                          disabled={busy}
+                          autoComplete="off"
+                          spellCheck={false}
+                        />
+                      </SettingsRow>
+                      <SettingsRow label={t("settings.wirelessAddressLabel")} hint={t("settings.wirelessAddressHint")}>
+                        <Input
+                          id="wireless-address"
+                          value={wirelessAddress}
+                          placeholder="192.168.137.1/24"
+                          onChange={(event) => setWirelessAddress(event.target.value)}
+                          disabled={busy}
+                          autoComplete="off"
+                          spellCheck={false}
+                        />
+                      </SettingsRow>
+                      <SettingsRow label={t("settings.wirelessChannelLabel")} hint={t("settings.wirelessChannelHint")}>
+                        <Input
+                          id="wireless-channel"
+                          type="number"
+                          min={1}
+                          value={wirelessChannel}
+                          placeholder="1"
+                          onChange={(event) => setWirelessChannel(event.target.value)}
+                          disabled={busy}
+                          autoComplete="off"
+                          spellCheck={false}
+                        />
+                      </SettingsRow>
+                      <SettingsRow label={t("settings.wirelessHostapdPathLabel")} hint={t("settings.wirelessHostapdPathHint")}>
+                        <Input
+                          id="wireless-hostapd-path"
+                          value={wirelessHostapdPath}
+                          placeholder="./hostapd"
+                          onChange={(event) => setWirelessHostapdPath(event.target.value)}
+                          disabled={busy}
+                          autoComplete="off"
+                          spellCheck={false}
+                        />
+                      </SettingsRow>
+                    </>
+                  )}
+
                   {section === "web" && (
                     <SettingsRow label={t("settings.webBindLabel")} hint={t("settings.webBindHint")}>
                       <Input
@@ -408,15 +559,40 @@ export function SettingsPage() {
                     </>
                   )}
                 </div>
+                </fieldset>
 
-                <div className="flex justify-end gap-2 border-t px-4 py-3 md:px-5">
-                  <Button type="button" variant="outline" disabled={busy} onClick={() => navigate(backTarget)}>
-                    {t("common.cancel")}
-                  </Button>
-                  <Button type="submit" disabled={busy || loading}>
-                    {busy && <Spinner data-icon="inline-start" />}
-                    {t("settings.save")}
-                  </Button>
+                <div className="flex flex-col gap-2 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between md:px-5">
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={lifecycleBusy}
+                      onClick={() => void reloadDaemon()}
+                    >
+                      <RefreshCw data-icon="inline-start" />
+                      {t("settings.reloadDaemon")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={lifecycleBusy}
+                      onClick={() => void restartDaemon()}
+                    >
+                      <RotateCcw data-icon="inline-start" />
+                      {t("settings.restartDaemon")}
+                    </Button>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button type="button" variant="outline" disabled={busy} onClick={() => navigate(backTarget)}>
+                      {t("common.cancel")}
+                    </Button>
+                    <Button type="submit" disabled={busy || loading || readOnly}>
+                      {busy && <Spinner data-icon="inline-start" />}
+                      {t("settings.save")}
+                    </Button>
+                  </div>
                 </div>
               </form>
             )}

@@ -104,11 +104,27 @@ export interface WebRTCSettings {
   stun_servers?: string[];
 }
 
+export interface GeneralSettings {
+  autostart: boolean;
+  rcd_name?: string;
+  pairing_file?: string;
+}
+
+export interface WirelessSettings {
+  interface?: string;
+  address?: string;
+  channel?: number;
+  hostapd_path?: string;
+}
+
 export interface ServiceSettings {
   web: WebSettings;
   socket: { bind?: string; chmod?: string };
   video?: VideoSettings;
   webrtc?: WebRTCSettings;
+  allow_config: boolean;
+  general: GeneralSettings;
+  wireless: WirelessSettings;
   config_path?: string;
   defaults: {
     web: WebSettings;
@@ -159,8 +175,10 @@ export const api = {
       method: "POST",
     }),
   getSettings: () => req<ServiceSettings>("/v1/settings"),
-  putSettings: (body: { web: WebSettings; socket: { bind?: string; chmod?: string }; video: VideoSettings; webrtc: WebRTCSettings }) =>
+  putSettings: (body: { web: WebSettings; socket: { bind?: string; chmod?: string }; video: VideoSettings; webrtc: WebRTCSettings; general: GeneralSettings; wireless: WirelessSettings }) =>
     req<ServiceSettings>("/v1/settings", { method: "PUT", body: JSON.stringify(body) }),
+  reloadDaemon: () => req<{ reloaded: boolean }>("/v1/daemon/reload", { method: "POST" }),
+  restartDaemon: () => req<{ restarting: boolean }>("/v1/daemon/restart", { method: "POST" }),
 };
 
 // base64ToBytes decodes huma's base64 []byte encoding into a Uint8Array.

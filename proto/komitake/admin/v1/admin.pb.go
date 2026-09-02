@@ -1871,6 +1871,158 @@ func (x *StreamVideoResponse) GetDiscontinuity() bool {
 	return false
 }
 
+type ReloadDaemonRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReloadDaemonRequest) Reset() {
+	*x = ReloadDaemonRequest{}
+	mi := &file_komitake_admin_v1_admin_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReloadDaemonRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReloadDaemonRequest) ProtoMessage() {}
+
+func (x *ReloadDaemonRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_komitake_admin_v1_admin_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReloadDaemonRequest.ProtoReflect.Descriptor instead.
+func (*ReloadDaemonRequest) Descriptor() ([]byte, []int) {
+	return file_komitake_admin_v1_admin_proto_rawDescGZIP(), []int{31}
+}
+
+type ReloadDaemonResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	State         State                  `protobuf:"varint,1,opt,name=state,proto3,enum=komitake.admin.v1.State" json:"state,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReloadDaemonResponse) Reset() {
+	*x = ReloadDaemonResponse{}
+	mi := &file_komitake_admin_v1_admin_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReloadDaemonResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReloadDaemonResponse) ProtoMessage() {}
+
+func (x *ReloadDaemonResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_komitake_admin_v1_admin_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReloadDaemonResponse.ProtoReflect.Descriptor instead.
+func (*ReloadDaemonResponse) Descriptor() ([]byte, []int) {
+	return file_komitake_admin_v1_admin_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *ReloadDaemonResponse) GetState() State {
+	if x != nil {
+		return x.State
+	}
+	return State_STATE_UNSPECIFIED
+}
+
+type RestartDaemonRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RestartDaemonRequest) Reset() {
+	*x = RestartDaemonRequest{}
+	mi := &file_komitake_admin_v1_admin_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RestartDaemonRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RestartDaemonRequest) ProtoMessage() {}
+
+func (x *RestartDaemonRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_komitake_admin_v1_admin_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RestartDaemonRequest.ProtoReflect.Descriptor instead.
+func (*RestartDaemonRequest) Descriptor() ([]byte, []int) {
+	return file_komitake_admin_v1_admin_proto_rawDescGZIP(), []int{33}
+}
+
+type RestartDaemonResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RestartDaemonResponse) Reset() {
+	*x = RestartDaemonResponse{}
+	mi := &file_komitake_admin_v1_admin_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RestartDaemonResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RestartDaemonResponse) ProtoMessage() {}
+
+func (x *RestartDaemonResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_komitake_admin_v1_admin_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RestartDaemonResponse.ProtoReflect.Descriptor instead.
+func (*RestartDaemonResponse) Descriptor() ([]byte, []int) {
+	return file_komitake_admin_v1_admin_proto_rawDescGZIP(), []int{34}
+}
+
 var File_komitake_admin_v1_admin_proto protoreflect.FileDescriptor
 
 const file_komitake_admin_v1_admin_proto_rawDesc = "" +
@@ -2005,13 +2157,19 @@ const file_komitake_admin_v1_admin_proto_rawDesc = "" +
 	"metadata_2\x18\x05 \x01(\x04R\tmetadata2\x12\x1b\n" +
 	"\tkey_frame\x18\x06 \x01(\bR\bkeyFrame\x12\x17\n" +
 	"\aannex_b\x18\a \x01(\fR\x06annexB\x12$\n" +
-	"\rdiscontinuity\x18\b \x01(\bR\rdiscontinuity*T\n" +
+	"\rdiscontinuity\x18\b \x01(\bR\rdiscontinuity\"\x15\n" +
+	"\x13ReloadDaemonRequest\"F\n" +
+	"\x14ReloadDaemonResponse\x12.\n" +
+	"\x05state\x18\x01 \x01(\x0e2\x18.komitake.admin.v1.StateR\x05state\"\x16\n" +
+	"\x14RestartDaemonRequest\"\x17\n" +
+	"\x15RestartDaemonResponse*T\n" +
 	"\x05State\x12\x15\n" +
 	"\x11STATE_UNSPECIFIED\x10\x00\x12\x0e\n" +
 	"\n" +
 	"STATE_DOWN\x10\x01\x12\x11\n" +
 	"\rSTATE_RUNNING\x10\x02\x12\x11\n" +
-	"\rSTATE_PAIRING\x10\x032\xfb\b\n" +
+	"\rSTATE_PAIRING\x10\x032\xc0\n" +
+	"\n" +
 	"\fAdminService\x12S\n" +
 	"\bGetState\x12\".komitake.admin.v1.GetStateRequest\x1a#.komitake.admin.v1.GetStateResponse\x12S\n" +
 	"\bSetState\x12\".komitake.admin.v1.SetStateRequest\x1a#.komitake.admin.v1.SetStateResponse\x12e\n" +
@@ -2024,7 +2182,9 @@ const file_komitake_admin_v1_admin_proto_rawDesc = "" +
 	"\bGetDrive\x12\".komitake.admin.v1.GetDriveRequest\x1a#.komitake.admin.v1.GetDriveResponse\x12_\n" +
 	"\fSetDriveMode\x12&.komitake.admin.v1.SetDriveModeRequest\x1a'.komitake.admin.v1.SetDriveModeResponse\x12_\n" +
 	"\fShutdownKart\x12&.komitake.admin.v1.ShutdownKartRequest\x1a'.komitake.admin.v1.ShutdownKartResponse\x12^\n" +
-	"\vStreamVideo\x12%.komitake.admin.v1.StreamVideoRequest\x1a&.komitake.admin.v1.StreamVideoResponse0\x01B>Z<github.com/Alex4386/komitake/proto/komitake/admin/v1;adminv1b\x06proto3"
+	"\vStreamVideo\x12%.komitake.admin.v1.StreamVideoRequest\x1a&.komitake.admin.v1.StreamVideoResponse0\x01\x12_\n" +
+	"\fReloadDaemon\x12&.komitake.admin.v1.ReloadDaemonRequest\x1a'.komitake.admin.v1.ReloadDaemonResponse\x12b\n" +
+	"\rRestartDaemon\x12'.komitake.admin.v1.RestartDaemonRequest\x1a(.komitake.admin.v1.RestartDaemonResponseB>Z<github.com/Alex4386/komitake/proto/komitake/admin/v1;adminv1b\x06proto3"
 
 var (
 	file_komitake_admin_v1_admin_proto_rawDescOnce sync.Once
@@ -2039,7 +2199,7 @@ func file_komitake_admin_v1_admin_proto_rawDescGZIP() []byte {
 }
 
 var file_komitake_admin_v1_admin_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_komitake_admin_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 31)
+var file_komitake_admin_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 35)
 var file_komitake_admin_v1_admin_proto_goTypes = []any{
 	(State)(0),                     // 0: komitake.admin.v1.State
 	(*PairingRecord)(nil),          // 1: komitake.admin.v1.PairingRecord
@@ -2073,6 +2233,10 @@ var file_komitake_admin_v1_admin_proto_goTypes = []any{
 	(*ShutdownKartResponse)(nil),   // 29: komitake.admin.v1.ShutdownKartResponse
 	(*StreamVideoRequest)(nil),     // 30: komitake.admin.v1.StreamVideoRequest
 	(*StreamVideoResponse)(nil),    // 31: komitake.admin.v1.StreamVideoResponse
+	(*ReloadDaemonRequest)(nil),    // 32: komitake.admin.v1.ReloadDaemonRequest
+	(*ReloadDaemonResponse)(nil),   // 33: komitake.admin.v1.ReloadDaemonResponse
+	(*RestartDaemonRequest)(nil),   // 34: komitake.admin.v1.RestartDaemonRequest
+	(*RestartDaemonResponse)(nil),  // 35: komitake.admin.v1.RestartDaemonResponse
 }
 var file_komitake_admin_v1_admin_proto_depIdxs = []int32{
 	0,  // 0: komitake.admin.v1.PairingRecord.state:type_name -> komitake.admin.v1.State
@@ -2096,35 +2260,40 @@ var file_komitake_admin_v1_admin_proto_depIdxs = []int32{
 	22, // 18: komitake.admin.v1.GetDriveResponse.drive:type_name -> komitake.admin.v1.DriveState
 	3,  // 19: komitake.admin.v1.SetDriveModeResponse.device:type_name -> komitake.admin.v1.DeviceSummary
 	3,  // 20: komitake.admin.v1.ShutdownKartResponse.device:type_name -> komitake.admin.v1.DeviceSummary
-	6,  // 21: komitake.admin.v1.AdminService.GetState:input_type -> komitake.admin.v1.GetStateRequest
-	8,  // 22: komitake.admin.v1.AdminService.SetState:input_type -> komitake.admin.v1.SetStateRequest
-	10, // 23: komitake.admin.v1.AdminService.GetPairingInfo:input_type -> komitake.admin.v1.GetPairingInfoRequest
-	12, // 24: komitake.admin.v1.AdminService.ListDevices:input_type -> komitake.admin.v1.ListDevicesRequest
-	14, // 25: komitake.admin.v1.AdminService.WaitForDevice:input_type -> komitake.admin.v1.WaitForDeviceRequest
-	16, // 26: komitake.admin.v1.AdminService.GetDeviceParam:input_type -> komitake.admin.v1.GetDeviceParamRequest
-	18, // 27: komitake.admin.v1.AdminService.GetProductCode:input_type -> komitake.admin.v1.GetProductCodeRequest
-	21, // 28: komitake.admin.v1.AdminService.SetDrive:input_type -> komitake.admin.v1.SetDriveRequest
-	24, // 29: komitake.admin.v1.AdminService.GetDrive:input_type -> komitake.admin.v1.GetDriveRequest
-	26, // 30: komitake.admin.v1.AdminService.SetDriveMode:input_type -> komitake.admin.v1.SetDriveModeRequest
-	28, // 31: komitake.admin.v1.AdminService.ShutdownKart:input_type -> komitake.admin.v1.ShutdownKartRequest
-	30, // 32: komitake.admin.v1.AdminService.StreamVideo:input_type -> komitake.admin.v1.StreamVideoRequest
-	7,  // 33: komitake.admin.v1.AdminService.GetState:output_type -> komitake.admin.v1.GetStateResponse
-	9,  // 34: komitake.admin.v1.AdminService.SetState:output_type -> komitake.admin.v1.SetStateResponse
-	11, // 35: komitake.admin.v1.AdminService.GetPairingInfo:output_type -> komitake.admin.v1.GetPairingInfoResponse
-	13, // 36: komitake.admin.v1.AdminService.ListDevices:output_type -> komitake.admin.v1.ListDevicesResponse
-	15, // 37: komitake.admin.v1.AdminService.WaitForDevice:output_type -> komitake.admin.v1.WaitForDeviceResponse
-	17, // 38: komitake.admin.v1.AdminService.GetDeviceParam:output_type -> komitake.admin.v1.GetDeviceParamResponse
-	20, // 39: komitake.admin.v1.AdminService.GetProductCode:output_type -> komitake.admin.v1.GetProductCodeResponse
-	23, // 40: komitake.admin.v1.AdminService.SetDrive:output_type -> komitake.admin.v1.SetDriveResponse
-	25, // 41: komitake.admin.v1.AdminService.GetDrive:output_type -> komitake.admin.v1.GetDriveResponse
-	27, // 42: komitake.admin.v1.AdminService.SetDriveMode:output_type -> komitake.admin.v1.SetDriveModeResponse
-	29, // 43: komitake.admin.v1.AdminService.ShutdownKart:output_type -> komitake.admin.v1.ShutdownKartResponse
-	31, // 44: komitake.admin.v1.AdminService.StreamVideo:output_type -> komitake.admin.v1.StreamVideoResponse
-	33, // [33:45] is the sub-list for method output_type
-	21, // [21:33] is the sub-list for method input_type
-	21, // [21:21] is the sub-list for extension type_name
-	21, // [21:21] is the sub-list for extension extendee
-	0,  // [0:21] is the sub-list for field type_name
+	0,  // 21: komitake.admin.v1.ReloadDaemonResponse.state:type_name -> komitake.admin.v1.State
+	6,  // 22: komitake.admin.v1.AdminService.GetState:input_type -> komitake.admin.v1.GetStateRequest
+	8,  // 23: komitake.admin.v1.AdminService.SetState:input_type -> komitake.admin.v1.SetStateRequest
+	10, // 24: komitake.admin.v1.AdminService.GetPairingInfo:input_type -> komitake.admin.v1.GetPairingInfoRequest
+	12, // 25: komitake.admin.v1.AdminService.ListDevices:input_type -> komitake.admin.v1.ListDevicesRequest
+	14, // 26: komitake.admin.v1.AdminService.WaitForDevice:input_type -> komitake.admin.v1.WaitForDeviceRequest
+	16, // 27: komitake.admin.v1.AdminService.GetDeviceParam:input_type -> komitake.admin.v1.GetDeviceParamRequest
+	18, // 28: komitake.admin.v1.AdminService.GetProductCode:input_type -> komitake.admin.v1.GetProductCodeRequest
+	21, // 29: komitake.admin.v1.AdminService.SetDrive:input_type -> komitake.admin.v1.SetDriveRequest
+	24, // 30: komitake.admin.v1.AdminService.GetDrive:input_type -> komitake.admin.v1.GetDriveRequest
+	26, // 31: komitake.admin.v1.AdminService.SetDriveMode:input_type -> komitake.admin.v1.SetDriveModeRequest
+	28, // 32: komitake.admin.v1.AdminService.ShutdownKart:input_type -> komitake.admin.v1.ShutdownKartRequest
+	30, // 33: komitake.admin.v1.AdminService.StreamVideo:input_type -> komitake.admin.v1.StreamVideoRequest
+	32, // 34: komitake.admin.v1.AdminService.ReloadDaemon:input_type -> komitake.admin.v1.ReloadDaemonRequest
+	34, // 35: komitake.admin.v1.AdminService.RestartDaemon:input_type -> komitake.admin.v1.RestartDaemonRequest
+	7,  // 36: komitake.admin.v1.AdminService.GetState:output_type -> komitake.admin.v1.GetStateResponse
+	9,  // 37: komitake.admin.v1.AdminService.SetState:output_type -> komitake.admin.v1.SetStateResponse
+	11, // 38: komitake.admin.v1.AdminService.GetPairingInfo:output_type -> komitake.admin.v1.GetPairingInfoResponse
+	13, // 39: komitake.admin.v1.AdminService.ListDevices:output_type -> komitake.admin.v1.ListDevicesResponse
+	15, // 40: komitake.admin.v1.AdminService.WaitForDevice:output_type -> komitake.admin.v1.WaitForDeviceResponse
+	17, // 41: komitake.admin.v1.AdminService.GetDeviceParam:output_type -> komitake.admin.v1.GetDeviceParamResponse
+	20, // 42: komitake.admin.v1.AdminService.GetProductCode:output_type -> komitake.admin.v1.GetProductCodeResponse
+	23, // 43: komitake.admin.v1.AdminService.SetDrive:output_type -> komitake.admin.v1.SetDriveResponse
+	25, // 44: komitake.admin.v1.AdminService.GetDrive:output_type -> komitake.admin.v1.GetDriveResponse
+	27, // 45: komitake.admin.v1.AdminService.SetDriveMode:output_type -> komitake.admin.v1.SetDriveModeResponse
+	29, // 46: komitake.admin.v1.AdminService.ShutdownKart:output_type -> komitake.admin.v1.ShutdownKartResponse
+	31, // 47: komitake.admin.v1.AdminService.StreamVideo:output_type -> komitake.admin.v1.StreamVideoResponse
+	33, // 48: komitake.admin.v1.AdminService.ReloadDaemon:output_type -> komitake.admin.v1.ReloadDaemonResponse
+	35, // 49: komitake.admin.v1.AdminService.RestartDaemon:output_type -> komitake.admin.v1.RestartDaemonResponse
+	36, // [36:50] is the sub-list for method output_type
+	22, // [22:36] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_komitake_admin_v1_admin_proto_init() }
@@ -2139,7 +2308,7 @@ func file_komitake_admin_v1_admin_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_komitake_admin_v1_admin_proto_rawDesc), len(file_komitake_admin_v1_admin_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   31,
+			NumMessages:   35,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

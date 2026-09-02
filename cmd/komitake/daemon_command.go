@@ -19,6 +19,11 @@ import (
 	"google.golang.org/grpc"
 )
 
+// errDaemonRestart signals the daemon exited to be restarted by its supervisor.
+// It surfaces as a non-zero exit so systemd (Restart=always) starts a fresh
+// instance.
+var errDaemonRestart = errors.New("daemon restart requested")
+
 func newDaemonCommand(opts *options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "daemon",
@@ -76,6 +81,13 @@ func newDaemonCommand(opts *options) *cobra.Command {
 				logger.Info("received shutdown signal")
 				server.GracefulStop()
 				return nil
+			case <-manager.RestartRequested():
+				// A restart was requested over the admin API. Exit non-zero so a
+				// process supervisor (systemd Restart=always) starts a fresh
+				// instance with the updated config.
+				logger.Info("restart requested; exiting for supervisor to restart")
+				server.GracefulStop()
+				return errDaemonRestart
 			case err := <-errCh:
 				server.Stop()
 				if errors.Is(err, net.ErrClosed) {

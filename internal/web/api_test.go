@@ -111,6 +111,9 @@ func (f *fakeClient) StreamVideoWithOptions(ctx context.Context, _ string, optio
 	return &fakeVideoReceiver{ctx: ctx, frames: append([]komitake.VideoFrame(nil), f.video...)}, nil
 }
 
+func (f *fakeClient) ReloadDaemon(context.Context) error  { return nil }
+func (f *fakeClient) RestartDaemon(context.Context) error { return nil }
+
 type fakeVideoReceiver struct {
 	ctx    context.Context
 	frames []komitake.VideoFrame

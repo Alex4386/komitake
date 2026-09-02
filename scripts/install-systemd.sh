@@ -61,8 +61,10 @@ Wants=network-online.target
 
 [Service]
 Type=simple
+# Restart=always so `komitake daemon` can exit for a supervised restart
+# (triggered via the admin API / Web UI) and systemd brings it right back.
 ExecStart=$KOMITAKE_BIN daemon --config $CONFIG_PATH
-Restart=on-failure
+Restart=always
 RestartSec=2
 User=root
 WorkingDirectory=/

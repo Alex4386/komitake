@@ -5,6 +5,7 @@ package daemon
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net"
 	"sync"
@@ -145,6 +146,11 @@ type Manager struct {
 	baseCtx    context.Context
 	baseCancel context.CancelFunc
 	closed     bool
+
+	// restartCh is closed once when a restart is requested, so the daemon
+	// command can exit and let the process supervisor start a fresh instance.
+	restartCh   chan struct{}
+	restartOnce sync.Once
 }
 
 var pairingModeTimeout = 2 * time.Minute
@@ -175,6 +181,7 @@ func NewManager(cfg config.Runtime) *Manager {
 		notify:       make(chan struct{}),
 		baseCtx:      baseCtx,
 		baseCancel:   baseCancel,
+		restartCh:    make(chan struct{}),
 	}
 	manager.newTranscoder = func(ctx context.Context, deviceID string, hub *videoHub, logger *slog.Logger) (videoEncoder, error) {
 		if manager.videoProfile.Backend == config.VideoHwaccelNone {
@@ -251,6 +258,51 @@ func (m *Manager) Close() error {
 
 	m.logger.Info("manager stopped")
 	return nil
+}
+
+// Reload re-reads config.json and re-applies settings that can be changed
+// without recreating the process. Listener, socket, and wireless bring-up
+// changes need a full restart; those are logged and left for RestartDaemon.
+// It returns the current state after any live re-application.
+func (m *Manager) Reload(ctx context.Context) (State, error) {
+	rt, err := config.Load(m.cfg.ConfigPath, config.Options{ConfigPath: m.cfg.ConfigPath})
+	if err != nil {
+		return m.CurrentState(), fmt.Errorf("reload config: %w", err)
+	}
+
+	// Re-resolve the video profile so a changed hwaccel/ffmpeg setting applies
+	// to newly-started transcoders without a restart.
+	videoProfile, profileErr := ResolveVideoProfile(rt.Video)
+	if profileErr != nil {
+		m.logger.Warn("reload: video profile unavailable", "error", profileErr)
+	}
+
+	m.mu.Lock()
+	if m.closed {
+		m.mu.Unlock()
+		return StateDown, fmt.Errorf("daemon is shutting down")
+	}
+	m.cfg.Video = rt.Video
+	if profileErr == nil {
+		m.videoProfile = videoProfile
+	}
+	state := m.state
+	m.mu.Unlock()
+
+	m.logger.Info("configuration reloaded",
+		"note", "listener, socket, and wireless changes require a restart")
+	return state, nil
+}
+
+// RequestRestart signals the daemon command to exit so the process supervisor
+// restarts a fresh instance. It is idempotent.
+func (m *Manager) RequestRestart() {
+	m.restartOnce.Do(func() { close(m.restartCh) })
+}
+
+// RestartRequested returns a channel closed when a restart has been requested.
+func (m *Manager) RestartRequested() <-chan struct{} {
+	return m.restartCh
 }
 
 func (m *Manager) CurrentState() State {

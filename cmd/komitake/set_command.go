@@ -45,6 +45,7 @@ func newSetCommand(opts *options) *cobra.Command {
 		webTLSEnabled       boolFlag
 		webTLSCertFile      string
 		webTLSKeyFile       string
+		webAllowConfig      boolFlag
 		socketBind          string
 		socketChmod         string
 		wirelessInterface   string
@@ -91,6 +92,7 @@ func newSetCommand(opts *options) *cobra.Command {
 				webTLSEnabled:       &webTLSEnabled,
 				webTLSCertFile:      &webTLSCertFile,
 				webTLSKeyFile:       &webTLSKeyFile,
+				webAllowConfig:      &webAllowConfig,
 				socketBind:          &socketBind,
 				socketChmod:         &socketChmod,
 				wirelessInterface:   &wirelessInterface,
@@ -132,6 +134,7 @@ func newSetCommand(opts *options) *cobra.Command {
 	flags.Var(&webTLSEnabled, "web-tls-enabled", "web.tls.enabled: serve HTTPS")
 	flags.StringVar(&webTLSCertFile, "web-tls-cert-file", "", "web.tls.cert_file: PEM certificate chain")
 	flags.StringVar(&webTLSKeyFile, "web-tls-key-file", "", "web.tls.key_file: PEM private key")
+	flags.Var(&webAllowConfig, "web-allow-config", "web.allow_config: allow editing settings from the Web UI")
 	flags.StringVar(&socketBind, "socket-bind", "", "socket.bind: admin API unix:/path or host:port")
 	flags.StringVar(&socketChmod, "socket-chmod", "", "socket.chmod: unix socket mode (octal)")
 	flags.StringVar(&wirelessInterface, "wireless-interface", "", "wireless.interface: Wi-Fi adapter for the kart AP")
@@ -172,7 +175,7 @@ type settingsFlagBundle struct {
 	wirelessInterface, wirelessAddress, wirelessChannel                *string
 	wirelessHostapdPath, wirelessSSID, wirelessPSK                     *string
 	pairingFile, videoHwaccel, videoFFmpegPath, videoFFmpegProfile, rcdName, secret *string
-	webTLSEnabled, autostart                                           *boolFlag
+	webTLSEnabled, autostart, webAllowConfig                                        *boolFlag
 }
 
 func collectSettingsChanges(cmd *cobra.Command, flags settingsFlagBundle) (config.SettingsChanges, error) {
@@ -194,6 +197,11 @@ func collectSettingsChanges(cmd *cobra.Command, flags settingsFlagBundle) (confi
 	}
 	if cmd.Flags().Changed("web-tls-key-file") {
 		changes.WebTLSKeyFile = flags.webTLSKeyFile
+		set = true
+	}
+	if flags.webAllowConfig.set {
+		value := flags.webAllowConfig.value
+		changes.WebAllowConfig = &value
 		set = true
 	}
 	if cmd.Flags().Changed("socket-bind") {

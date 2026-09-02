@@ -31,6 +31,8 @@ const (
 	AdminService_SetDriveMode_FullMethodName   = "/komitake.admin.v1.AdminService/SetDriveMode"
 	AdminService_ShutdownKart_FullMethodName   = "/komitake.admin.v1.AdminService/ShutdownKart"
 	AdminService_StreamVideo_FullMethodName    = "/komitake.admin.v1.AdminService/StreamVideo"
+	AdminService_ReloadDaemon_FullMethodName   = "/komitake.admin.v1.AdminService/ReloadDaemon"
+	AdminService_RestartDaemon_FullMethodName  = "/komitake.admin.v1.AdminService/RestartDaemon"
 )
 
 // AdminServiceClient is the client API for AdminService service.
@@ -62,6 +64,12 @@ type AdminServiceClient interface {
 	ShutdownKart(ctx context.Context, in *ShutdownKartRequest, opts ...grpc.CallOption) (*ShutdownKartResponse, error)
 	// StreamVideo streams complete Annex-B H.264 frames for one connected kart.
 	StreamVideo(ctx context.Context, in *StreamVideoRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamVideoResponse], error)
+	// ReloadDaemon re-reads config.json and re-applies settings that can change
+	// live, without restarting the process.
+	ReloadDaemon(ctx context.Context, in *ReloadDaemonRequest, opts ...grpc.CallOption) (*ReloadDaemonResponse, error)
+	// RestartDaemon stops the daemon so the process supervisor (systemd) starts a
+	// fresh instance. Requires the daemon to run under a supervisor.
+	RestartDaemon(ctx context.Context, in *RestartDaemonRequest, opts ...grpc.CallOption) (*RestartDaemonResponse, error)
 }
 
 type adminServiceClient struct {
@@ -201,6 +209,26 @@ func (c *adminServiceClient) StreamVideo(ctx context.Context, in *StreamVideoReq
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type AdminService_StreamVideoClient = grpc.ServerStreamingClient[StreamVideoResponse]
 
+func (c *adminServiceClient) ReloadDaemon(ctx context.Context, in *ReloadDaemonRequest, opts ...grpc.CallOption) (*ReloadDaemonResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReloadDaemonResponse)
+	err := c.cc.Invoke(ctx, AdminService_ReloadDaemon_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) RestartDaemon(ctx context.Context, in *RestartDaemonRequest, opts ...grpc.CallOption) (*RestartDaemonResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RestartDaemonResponse)
+	err := c.cc.Invoke(ctx, AdminService_RestartDaemon_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminServiceServer is the server API for AdminService service.
 // All implementations must embed UnimplementedAdminServiceServer
 // for forward compatibility.
@@ -230,6 +258,12 @@ type AdminServiceServer interface {
 	ShutdownKart(context.Context, *ShutdownKartRequest) (*ShutdownKartResponse, error)
 	// StreamVideo streams complete Annex-B H.264 frames for one connected kart.
 	StreamVideo(*StreamVideoRequest, grpc.ServerStreamingServer[StreamVideoResponse]) error
+	// ReloadDaemon re-reads config.json and re-applies settings that can change
+	// live, without restarting the process.
+	ReloadDaemon(context.Context, *ReloadDaemonRequest) (*ReloadDaemonResponse, error)
+	// RestartDaemon stops the daemon so the process supervisor (systemd) starts a
+	// fresh instance. Requires the daemon to run under a supervisor.
+	RestartDaemon(context.Context, *RestartDaemonRequest) (*RestartDaemonResponse, error)
 	mustEmbedUnimplementedAdminServiceServer()
 }
 
@@ -275,6 +309,12 @@ func (UnimplementedAdminServiceServer) ShutdownKart(context.Context, *ShutdownKa
 }
 func (UnimplementedAdminServiceServer) StreamVideo(*StreamVideoRequest, grpc.ServerStreamingServer[StreamVideoResponse]) error {
 	return status.Error(codes.Unimplemented, "method StreamVideo not implemented")
+}
+func (UnimplementedAdminServiceServer) ReloadDaemon(context.Context, *ReloadDaemonRequest) (*ReloadDaemonResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ReloadDaemon not implemented")
+}
+func (UnimplementedAdminServiceServer) RestartDaemon(context.Context, *RestartDaemonRequest) (*RestartDaemonResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RestartDaemon not implemented")
 }
 func (UnimplementedAdminServiceServer) mustEmbedUnimplementedAdminServiceServer() {}
 func (UnimplementedAdminServiceServer) testEmbeddedByValue()                      {}
@@ -506,6 +546,42 @@ func _AdminService_StreamVideo_Handler(srv interface{}, stream grpc.ServerStream
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type AdminService_StreamVideoServer = grpc.ServerStreamingServer[StreamVideoResponse]
 
+func _AdminService_ReloadDaemon_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReloadDaemonRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).ReloadDaemon(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_ReloadDaemon_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).ReloadDaemon(ctx, req.(*ReloadDaemonRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_RestartDaemon_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RestartDaemonRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).RestartDaemon(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_RestartDaemon_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).RestartDaemon(ctx, req.(*RestartDaemonRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminService_ServiceDesc is the grpc.ServiceDesc for AdminService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -556,6 +632,14 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ShutdownKart",
 			Handler:    _AdminService_ShutdownKart_Handler,
+		},
+		{
+			MethodName: "ReloadDaemon",
+			Handler:    _AdminService_ReloadDaemon_Handler,
+		},
+		{
+			MethodName: "RestartDaemon",
+			Handler:    _AdminService_RestartDaemon_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

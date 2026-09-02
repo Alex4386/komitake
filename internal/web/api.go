@@ -25,6 +25,8 @@ type Client interface {
 	ShutdownKart(ctx context.Context, selector string) (*komitake.Kart, error)
 	StreamVideo(ctx context.Context, selector string) (komitake.VideoReceiver, error)
 	StreamVideoWithOptions(ctx context.Context, selector string, options komitake.VideoStreamOptions) (komitake.VideoReceiver, error)
+	ReloadDaemon(ctx context.Context) error
+	RestartDaemon(ctx context.Context) error
 }
 
 // RegisterAPI mounts the REST API on the given mux, backed by client. The API
@@ -55,6 +57,7 @@ func rootPlugins(client Client, options Options) []Plugin {
 				&statusPlugin{client: client},
 				&kartsPlugin{client: client},
 				&settingsPlugin{configPath: options.ConfigPath},
+				&daemonPlugin{client: client},
 			},
 		},
 	}

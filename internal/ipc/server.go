@@ -168,6 +168,19 @@ func (service *DaemonService) StreamVideo(
 	return stream.Context().Err()
 }
 
+func (s *DaemonService) ReloadDaemon(ctx context.Context, _ *adminv1.ReloadDaemonRequest) (*adminv1.ReloadDaemonResponse, error) {
+	state, err := s.manager.Reload(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &adminv1.ReloadDaemonResponse{State: stateToProto(state)}, nil
+}
+
+func (s *DaemonService) RestartDaemon(ctx context.Context, _ *adminv1.RestartDaemonRequest) (*adminv1.RestartDaemonResponse, error) {
+	s.manager.RequestRestart()
+	return &adminv1.RestartDaemonResponse{}, nil
+}
+
 func driveToProto(state daemon.DriveState) *adminv1.DriveState {
 	updatedAt := ""
 	if !state.UpdatedAt.IsZero() {

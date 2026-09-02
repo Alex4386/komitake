@@ -59,6 +59,16 @@ type File struct {
 type WebFile struct {
 	Bind string     `json:"bind,omitempty"`
 	TLS  WebTLSFile `json:"tls,omitempty"`
+	// AllowConfig gates editing daemon settings from the Web UI. It defaults to
+	// true; set it to false to make the Web UI settings API read-only. A pointer
+	// distinguishes "unset" (default true) from an explicit false.
+	AllowConfig *bool `json:"allow_config,omitempty"`
+}
+
+// WebAllowConfig reports whether Web UI settings editing is permitted, applying
+// the default-true policy for an unset value.
+func (web WebFile) WebAllowConfig() bool {
+	return web.AllowConfig == nil || *web.AllowConfig
 }
 
 type WebTLSFile struct {

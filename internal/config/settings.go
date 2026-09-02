@@ -10,12 +10,34 @@ import (
 
 // ServiceSettings are safe, operator-editable settings persisted in config.json.
 type ServiceSettings struct {
-	Web        WebFile                 `json:"web"`
-	Socket     SocketFile              `json:"socket"`
-	Video      VideoFile               `json:"video"`
-	WebRTC     WebRTCFile              `json:"webrtc"`
-	ConfigPath string                  `json:"config_path,omitempty"`
-	Defaults   ServiceSettingsDefaults `json:"defaults"`
+	Web    WebFile    `json:"web"`
+	Socket SocketFile `json:"socket"`
+	Video  VideoFile  `json:"video"`
+	WebRTC WebRTCFile `json:"webrtc"`
+	// AllowConfig reports whether editing settings from the Web UI is permitted.
+	// It is read-only over the API (never accepted on write) so a locked-down
+	// deployment cannot be unlocked from the browser.
+	AllowConfig bool                    `json:"allow_config"`
+	General     GeneralSettings         `json:"general"`
+	Wireless    WirelessSettings        `json:"wireless"`
+	ConfigPath  string                  `json:"config_path,omitempty"`
+	Defaults    ServiceSettingsDefaults `json:"defaults"`
+}
+
+// GeneralSettings are operator-editable top-level daemon settings.
+type GeneralSettings struct {
+	Autostart   bool   `json:"autostart"`
+	RCDName     string `json:"rcd_name,omitempty"`
+	PairingFile string `json:"pairing_file,omitempty"`
+}
+
+// WirelessSettings are the non-secret, operator-editable wireless fields.
+// SSID and PSK are intentionally excluded (PSK is effectively the network key).
+type WirelessSettings struct {
+	Interface   string `json:"interface,omitempty"`
+	Address     string `json:"address,omitempty"`
+	Channel     uint16 `json:"channel,omitempty"`
+	HostapdPath string `json:"hostapd_path,omitempty"`
 }
 
 type ServiceSettingsDefaults struct {
@@ -104,16 +126,41 @@ func ReadServiceSettings(configPath string) (ServiceSettings, error) {
 		out.Video.Hwaccel = VideoHwaccelAuto
 	}
 	out.WebRTC.STUNServers = file.WebRTC.NormalizedSTUNServers()
+	out.AllowConfig = file.Web.WebAllowConfig()
+	autostart := true
+	if file.Autostart != nil {
+		autostart = *file.Autostart
+	}
+	out.General = GeneralSettings{
+		Autostart:   autostart,
+		RCDName:     strings.TrimSpace(file.RCD.Name),
+		PairingFile: strings.TrimSpace(file.PairingFile),
+	}
+	out.Wireless = WirelessSettings{
+		Interface:   strings.TrimSpace(file.Wireless.Interface),
+		Address:     strings.TrimSpace(file.Wireless.Address),
+		Channel:     file.Wireless.Channel,
+		HostapdPath: strings.TrimSpace(file.Wireless.HostapdPath),
+	}
 	return out, nil
 }
 
 // WriteServiceSettings patches web.*, socket.*, and video.* while preserving
 // secrets, wireless/RCD configuration, and unknown future fields. Legacy keys
 // are migrated and removed when the file is rewritten.
-func WriteServiceSettings(configPath string, web WebFile, socket SocketFile, video VideoFile, webrtc WebRTCFile) (ServiceSettings, error) {
+func WriteServiceSettings(configPath string, web WebFile, socket SocketFile, video VideoFile, webrtc WebRTCFile, general *GeneralSettings, wireless *WirelessSettings) (ServiceSettings, error) {
 	path, err := resolveExistingConfigPath(configPath)
 	if err != nil {
 		return ServiceSettings{}, err
+	}
+	// Enforce the lock server-side: a config with allow_config=false cannot be
+	// edited through this API, and the flag itself is never writable here.
+	existing, err := readConfigFile(path)
+	if err != nil {
+		return ServiceSettings{}, err
+	}
+	if !existing.Web.WebAllowConfig() {
+		return ServiceSettings{}, fmt.Errorf("web configuration editing is disabled (web.allow_config is false)")
 	}
 	webBind := strings.TrimSpace(web.Bind)
 	webTLSEnabled := web.TLS.Enabled
@@ -148,6 +195,29 @@ func WriteServiceSettings(configPath string, web WebFile, socket SocketFile, vid
 		VideoFFmpegArgsInput:  &ffmpegArgsInput,
 		VideoFFmpegArgsOutput: &ffmpegArgsOutput,
 		WebRTCSTUNServers:     &stunServers,
+	}
+	// General and wireless are only patched when the caller provides them, so a
+	// partial PUT never clobbers existing values it did not send.
+	if general != nil {
+		autostart := general.Autostart
+		rcdName := strings.TrimSpace(general.RCDName)
+		pairingFile := strings.TrimSpace(general.PairingFile)
+		changes.Autostart = &autostart
+		changes.RCDName = &rcdName
+		changes.PairingFile = &pairingFile
+	}
+	if wireless != nil {
+		wirelessInterface := strings.TrimSpace(wireless.Interface)
+		wirelessAddress := strings.TrimSpace(wireless.Address)
+		wirelessChannel := ""
+		if wireless.Channel != 0 {
+			wirelessChannel = strconv.FormatUint(uint64(wireless.Channel), 10)
+		}
+		wirelessHostapdPath := strings.TrimSpace(wireless.HostapdPath)
+		changes.WirelessInterface = &wirelessInterface
+		changes.WirelessAddress = &wirelessAddress
+		changes.WirelessChannel = &wirelessChannel
+		changes.WirelessHostapdPath = &wirelessHostapdPath
 	}
 	if err := ApplySettingsChanges(path, changes); err != nil {
 		return ServiceSettings{}, err

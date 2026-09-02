@@ -32,17 +32,19 @@ func (plugin *settingsPlugin) Register(api huma.API) {
 		Summary:     "Update daemon service settings",
 	}, func(ctx context.Context, input *struct {
 		Body struct {
-			Web    config.WebFile     `json:"web"`
-			Socket config.SocketFile  `json:"socket"`
-			Video  config.VideoFile   `json:"video"`
-			WebRTC *config.WebRTCFile `json:"webrtc,omitempty"`
+			Web      config.WebFile            `json:"web"`
+			Socket   config.SocketFile         `json:"socket"`
+			Video    config.VideoFile          `json:"video"`
+			WebRTC   *config.WebRTCFile        `json:"webrtc,omitempty"`
+			General  *config.GeneralSettings   `json:"general,omitempty"`
+			Wireless *config.WirelessSettings  `json:"wireless,omitempty"`
 		}
 	}) (*struct{ Body config.ServiceSettings }, error) {
 		webrtc := config.WebRTCFile{}
 		if input.Body.WebRTC != nil {
 			webrtc = *input.Body.WebRTC
 		}
-		settings, err := config.WriteServiceSettings(plugin.configPath, input.Body.Web, input.Body.Socket, input.Body.Video, webrtc)
+		settings, err := config.WriteServiceSettings(plugin.configPath, input.Body.Web, input.Body.Socket, input.Body.Video, webrtc, input.Body.General, input.Body.Wireless)
 		if err != nil {
 			return nil, huma.Error400BadRequest("invalid config settings", err)
 		}

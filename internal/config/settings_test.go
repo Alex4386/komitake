@@ -58,6 +58,8 @@ func TestWriteServiceSettingsPreservesAndMigratesConfig(t *testing.T) {
 		SocketFile{Bind: "unix:/tmp/komitake.sock", Chmod: "0770"},
 		VideoFile{},
 		WebRTCFile{},
+		nil,
+		nil,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -116,7 +118,7 @@ func TestWriteServiceSettingsValidation(t *testing.T) {
 		"socket chmod":  {socket: SocketFile{Chmod: "0999"}},
 	} {
 		t.Run(name, func(t *testing.T) {
-			if _, err := WriteServiceSettings(path, testCase.web, testCase.socket, VideoFile{}, WebRTCFile{}); err == nil {
+			if _, err := WriteServiceSettings(path, testCase.web, testCase.socket, VideoFile{}, WebRTCFile{}, nil, nil); err == nil {
 				t.Fatal("expected validation error")
 			}
 		})

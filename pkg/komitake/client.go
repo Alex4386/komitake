@@ -335,6 +335,20 @@ func (client *Client) ShutdownKart(ctx context.Context, selector string) (*Kart,
 	return &device, nil
 }
 
+// ReloadDaemon asks the daemon to re-read config.json and re-apply the settings
+// that can change without a restart.
+func (client *Client) ReloadDaemon(ctx context.Context) error {
+	_, err := client.admin.ReloadDaemon(ctx, &adminv1.ReloadDaemonRequest{})
+	return err
+}
+
+// RestartDaemon asks the daemon to exit so its supervisor starts a fresh
+// instance with the current config.
+func (client *Client) RestartDaemon(ctx context.Context) error {
+	_, err := client.admin.RestartDaemon(ctx, &adminv1.RestartDaemonRequest{})
+	return err
+}
+
 func driveFromProto(state *adminv1.DriveState) DriveState {
 	if state == nil {
 		return DriveState{}
