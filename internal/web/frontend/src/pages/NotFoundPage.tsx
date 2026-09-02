@@ -15,7 +15,7 @@ export function NotFoundPage() {
   const { t } = useTranslation();
 
   return (
-    <div className="theme flex h-svh bg-background text-foreground">
+    <div className="theme flex h-dvh bg-background text-foreground">
       <Empty className="m-4 min-h-0 flex-1 border">
         <EmptyHeader>
           <EmptyMedia variant="icon"><CircleAlert /></EmptyMedia>

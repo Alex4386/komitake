@@ -25,7 +25,7 @@ export function LandingPage() {
 
   return (
     <TooltipProvider>
-      <div className="theme flex h-svh bg-background text-foreground">
+      <div className="theme flex h-dvh bg-background text-foreground">
         <KartLanding
           variant="page"
           loading={conn !== "open"}

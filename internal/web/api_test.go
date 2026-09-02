@@ -638,8 +638,8 @@ func TestWebRTCOfferStreamsSharedH264Track(t *testing.T) {
 	}
 	select {
 	case options := <-client.videoStreamOptions:
-		if !options.FreshKeyFrame {
-			t.Fatal("WebRTC stream did not request a fresh keyframe")
+		if options.FreshKeyFrame {
+			t.Fatal("WebRTC stream should replay the stored GOP, not request a fresh keyframe")
 		}
 	default:
 		t.Fatal("WebRTC stream options were not recorded")

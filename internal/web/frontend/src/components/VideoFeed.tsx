@@ -1,6 +1,7 @@
 import { Camera, LoaderCircle, ShieldAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import type { VideoStatus } from "@/hooks/useVideoDecoder";
 import { cn } from "@/lib/utils";
@@ -15,10 +16,13 @@ interface VideoFeedProps {
   status: VideoStatus;
   error: string | null;
   overlay?: React.ReactNode;
+  errorAtTop?: boolean;
+  onSwitchToWebSocket?: () => void;
 }
 
-export function VideoFeed({ deviceId, canvasRef, videoRef, fullscreenRef, fullscreen, mode, status, error, overlay }: VideoFeedProps) {
+export function VideoFeed({ deviceId, canvasRef, videoRef, fullscreenRef, fullscreen, mode, status, error, overlay, errorAtTop, onSwitchToWebSocket }: VideoFeedProps) {
   const { t } = useTranslation();
+  const canSwitchToWebSocket = mode === "webrtc" && Boolean(onSwitchToWebSocket);
 
   const mediaClassName = cn(
     status === "playing" ? "object-contain" : "hidden",
@@ -71,10 +75,28 @@ export function VideoFeed({ deviceId, canvasRef, videoRef, fullscreenRef, fullsc
         </Empty>
       )}
       {error && (
-        <Alert variant="destructive" className="absolute inset-x-3 bottom-3">
+        <Alert
+          variant="destructive"
+          className={cn("absolute inset-x-3", errorAtTop ? "top-3" : "bottom-3")}
+        >
           <ShieldAlert />
           <AlertTitle>{t("video.cameraUnavailable")}</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription className="flex flex-col items-start gap-1">
+            <span>{error}</span>
+            {canSwitchToWebSocket && (
+              <>
+                <span>{t("video.webrtcFailedSuggestion")}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-1 w-fit"
+                  onClick={onSwitchToWebSocket}
+                >
+                  {t("video.switchToWebSocket")}
+                </Button>
+              </>
+            )}
+          </AlertDescription>
         </Alert>
       )}
       {overlay}

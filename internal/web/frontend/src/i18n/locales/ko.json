@@ -69,7 +69,9 @@
     "connectingLiveVideo": "라이브 영상 연결 중…",
     "waitingForStream": "영상 스트림 시작을 기다리는 중…",
     "chooseKart": "연결된 카트를 선택하여 라이브 영상을 시청하세요.",
-    "cameraUnavailable": "카메라를 사용할 수 없음"
+    "cameraUnavailable": "카메라를 사용할 수 없음",
+    "webrtcFailedSuggestion": "WebRTC로 연결하지 못했습니다. WebSocket 영상으로 전환해 보세요.",
+    "switchToWebSocket": "WebSocket으로 전환"
   },
   "metrics": {
     "title": "텔레메트리",

@@ -205,7 +205,7 @@ export function KartDashboardPage() {
 
   return (
     <TooltipProvider>
-      <div className="theme flex h-svh flex-col overflow-hidden bg-background text-foreground">
+      <div className="theme flex h-dvh flex-col overflow-hidden bg-background text-foreground">
         <TopBar
           status={status}
           devices={devices}
@@ -249,6 +249,8 @@ export function KartDashboardPage() {
                 mode={videoMode}
                 status={videoStatus}
                 error={videoError}
+                errorAtTop={touchEnabled}
+                onSwitchToWebSocket={() => onVideoModeChange("websocket")}
                 overlay={
                   <TouchDrive
                     enabled={touchEnabled && Boolean(selectedId) && Boolean(telemetry?.drive_armed) && requestedDriveMode !== false}

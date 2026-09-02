@@ -205,7 +205,11 @@ func streamWebRTCVideo(parent context.Context, peer *webrtc.PeerConnection, trac
 	case <-time.After(15 * time.Second):
 		return
 	}
-	stream, err := client.StreamVideoWithOptions(ctx, selector, komitake.VideoStreamOptions{FreshKeyFrame: true})
+	// FreshKeyFrame:false replays the hub's stored GOP (which begins at the last
+	// keyframe) before live frames. This primes the decoder immediately on
+	// connect so the first visible frame is the last real image rather than
+	// black while waiting for the kart to emit a new IDR.
+	stream, err := client.StreamVideoWithOptions(ctx, selector, komitake.VideoStreamOptions{FreshKeyFrame: false})
 	if err != nil {
 		return
 	}

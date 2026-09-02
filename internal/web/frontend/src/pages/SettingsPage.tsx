@@ -177,7 +177,7 @@ export function SettingsPage() {
 
   return (
     <TooltipProvider>
-      <div className="theme min-h-svh bg-background text-foreground">
+      <div className="theme min-h-dvh bg-background text-foreground">
         <header className="sticky top-0 z-10 flex items-center gap-3 border-b bg-background px-4 py-3 md:px-6">
           <Button variant="ghost" size="sm" className="-ml-2 gap-1.5" asChild>
             <Link to={backTarget} replace={false}>

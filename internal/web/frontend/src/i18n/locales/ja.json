@@ -71,7 +71,9 @@
     "connectingLiveVideo": "ライブ映像を接続中…",
     "waitingForStream": "映像ストリームの開始を待っています…",
     "chooseKart": "接続中のカートを選択してライブ映像を表示してください。",
-    "cameraUnavailable": "カメラが利用できません"
+    "cameraUnavailable": "カメラが利用できません",
+    "webrtcFailedSuggestion": "WebRTC で接続できませんでした。WebSocket 映像に切り替えてみてください。",
+    "switchToWebSocket": "WebSocket に切り替え"
   },
   "metrics": {
     "title": "テレメトリ",
