@@ -156,9 +156,26 @@
   * {
     @apply border-border outline-ring/50;
     }
+  html, body {
+    height: 100%;
+    }
   body {
     @apply bg-background text-foreground;
     text-wrap: pretty;
+    /* Lock the document to the viewport so iOS Safari can't rubber-band scroll,
+       which otherwise exposes empty space below a full-height layout. */
+    margin: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+    }
+  #root {
+    /* The single scroll container. Sized to the dynamic viewport so it matches
+       the dvh-based pages exactly: full-height pages (dashboard, fullscreen)
+       fill it and never scroll, while taller pages (Settings) scroll here
+       instead of on the body. */
+    height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: none;
     }
   html {
     font-family: var(--font-sans);
