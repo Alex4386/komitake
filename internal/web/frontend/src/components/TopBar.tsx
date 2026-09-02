@@ -9,6 +9,7 @@ import {
   Keyboard,
   Monitor,
   Moon,
+  MountainSnowIcon,
   Radio,
   Settings,
   SignalHigh,
@@ -93,6 +94,7 @@ export function TopBar({ status, devices, telemetry, selectedId, onSelect, onPai
     <header className="flex min-h-14 shrink-0 items-center gap-2 border-b bg-background px-3 md:px-4">
       <div className="flex min-w-0 items-center gap-2">
         <Button variant="ghost" onClick={() => navigate('/')}>
+          <MountainSnowIcon className="size-5 block sm:hidden" />
           <h1 className="font-heading hidden shrink-0 text-base font-semibold tracking-tight sm:block">{t("app.title")}</h1>
         </Button>
         <KartPicker devices={devices} selectedId={selectedId} onSelect={onSelect} onPair={onPair} />
