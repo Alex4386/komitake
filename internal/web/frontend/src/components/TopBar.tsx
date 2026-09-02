@@ -5,6 +5,7 @@ import {
   BatteryMedium,
   CircleHelp,
   Gamepad2,
+  Hand,
   Keyboard,
   Monitor,
   Moon,
@@ -25,7 +26,7 @@ import { KartPicker } from "@/components/KartPicker";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
+  DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator,
   DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -47,11 +48,14 @@ type Props = {
   onVideoModeChange: (mode: "websocket" | "webrtc") => void;
   onKeyboardControls: () => void;
   onGamepadControls: () => void;
+  onTouchControls: () => void;
+  touchEnabled: boolean;
+  onTouchEnabledChange: (enabled: boolean) => void;
   onHelp: () => void;
   onAp: () => void;
 };
 
-export function TopBar({ status, devices, telemetry, selectedId, onSelect, onPair, onStopPair, videoMode, onVideoModeChange, onKeyboardControls, onGamepadControls, onHelp, onAp }: Props) {
+export function TopBar({ status, devices, telemetry, selectedId, onSelect, onPair, onStopPair, videoMode, onVideoModeChange, onKeyboardControls, onGamepadControls, onTouchControls, touchEnabled, onTouchEnabledChange, onHelp, onAp }: Props) {
   const { t } = useTranslation();
   const location = useLocation();
   const selected = devices.find((device) => device.ident === selectedId) ?? null;
@@ -171,6 +175,14 @@ export function TopBar({ status, devices, telemetry, selectedId, onSelect, onPai
                   <DropdownMenuGroup>
                     <DropdownMenuItem onSelect={onKeyboardControls}><Keyboard /> {t("topBar.keyboard")}</DropdownMenuItem>
                     <DropdownMenuItem onSelect={onGamepadControls}><Gamepad2 /> {t("topBar.gamepad")}</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={onTouchControls}><Hand /> {t("topBar.touch")}</DropdownMenuItem>
+                    <DropdownMenuCheckboxItem
+                      checked={touchEnabled}
+                      onCheckedChange={onTouchEnabledChange}
+                      onSelect={(event) => event.preventDefault()}
+                    >
+                      {t("topBar.touchControls")}
+                    </DropdownMenuCheckboxItem>
                   </DropdownMenuGroup>
                 </DropdownMenuSubContent>
               </DropdownMenuSub>

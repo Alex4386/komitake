@@ -14,9 +14,10 @@ interface VideoFeedProps {
   mode: "websocket" | "webrtc";
   status: VideoStatus;
   error: string | null;
+  overlay?: React.ReactNode;
 }
 
-export function VideoFeed({ deviceId, canvasRef, videoRef, fullscreenRef, fullscreen, mode, status, error }: VideoFeedProps) {
+export function VideoFeed({ deviceId, canvasRef, videoRef, fullscreenRef, fullscreen, mode, status, error, overlay }: VideoFeedProps) {
   const { t } = useTranslation();
 
   const mediaClassName = cn(
@@ -76,6 +77,7 @@ export function VideoFeed({ deviceId, canvasRef, videoRef, fullscreenRef, fullsc
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
+      {overlay}
     </div>
   );
 }

@@ -12,6 +12,8 @@ import { KeyboardControlsDialog } from "@/components/KeyboardControlsDialog";
 import { MetricsPanel } from "@/components/MetricsPanel";
 import { PairDialog } from "@/components/PairDialog";
 import { TopBar } from "@/components/TopBar";
+import { TouchDrive } from "@/components/TouchDrive";
+import { TouchControlsDialog } from "@/components/TouchControlsDialog";
 import { VideoFeed } from "@/components/VideoFeed";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Toaster } from "@/components/ui/sonner";
@@ -45,6 +47,8 @@ export function KartDashboardPage() {
   const [keyboardControlsOpen, setKeyboardControlsOpen] = useState(false);
   const [gamepadControlsOpen, setGamepadControlsOpen] = useState(false);
   const [gamepadConnected, setGamepadConnected] = useState(false);
+  const [touchControlsOpen, setTouchControlsOpen] = useState(false);
+  const [touchEnabled, setTouchEnabled] = useState(() => localStorage.getItem("komitake-touch-controls") === "true");
   const [helpOpen, setHelpOpen] = useState(false);
   const [apOpen, setApOpen] = useState(false);
   const [metricsOpen, setMetricsOpen] = useState(false);
@@ -53,6 +57,8 @@ export function KartDashboardPage() {
   const videoFullscreenSupported = isFullscreenSupported();
   const [keyboardSteeringLimit, setKeyboardSteeringLimit] = useState(() => readStoredLimit("komitake-keyboard-steering-limit"));
   const [keyboardThrottleLimit, setKeyboardThrottleLimit] = useState(() => readStoredLimit("komitake-keyboard-throttle-limit"));
+  const [touchSteeringLimit, setTouchSteeringLimit] = useState(() => readStoredLimit("komitake-touch-steering-limit"));
+  const [touchThrottleLimit, setTouchThrottleLimit] = useState(() => readStoredLimit("komitake-touch-throttle-limit"));
   const [gamepadSettings, setGamepadSettings] = useState(() => readStoredGamepadSettings(localStorage.getItem("komitake-controller-settings")));
   const [videoMode, setVideoMode] = useState<"websocket" | "webrtc">(() => {
     return localStorage.getItem("komitake-video-mode") === "websocket" ? "websocket" : "webrtc";
@@ -111,6 +117,21 @@ export function KartDashboardPage() {
   const onKeyboardThrottleLimitChange = useCallback((limit: number) => {
     setKeyboardThrottleLimit(limit);
     localStorage.setItem("komitake-keyboard-throttle-limit", String(limit));
+  }, []);
+
+  const onTouchEnabledChange = useCallback((enabled: boolean) => {
+    setTouchEnabled(enabled);
+    localStorage.setItem("komitake-touch-controls", String(enabled));
+  }, []);
+
+  const onTouchSteeringLimitChange = useCallback((limit: number) => {
+    setTouchSteeringLimit(limit);
+    localStorage.setItem("komitake-touch-steering-limit", String(limit));
+  }, []);
+
+  const onTouchThrottleLimitChange = useCallback((limit: number) => {
+    setTouchThrottleLimit(limit);
+    localStorage.setItem("komitake-touch-throttle-limit", String(limit));
   }, []);
 
   const persistGamepadSettings = useCallback((settings: typeof gamepadSettings) => {
@@ -201,6 +222,9 @@ export function KartDashboardPage() {
           onVideoModeChange={onVideoModeChange}
           onKeyboardControls={() => setKeyboardControlsOpen(true)}
           onGamepadControls={() => setGamepadControlsOpen(true)}
+          onTouchControls={() => setTouchControlsOpen(true)}
+          touchEnabled={touchEnabled}
+          onTouchEnabledChange={onTouchEnabledChange}
           onHelp={() => setHelpOpen(true)}
           onAp={() => setApOpen(true)}
         />
@@ -225,6 +249,14 @@ export function KartDashboardPage() {
                 mode={videoMode}
                 status={videoStatus}
                 error={videoError}
+                overlay={
+                  <TouchDrive
+                    enabled={touchEnabled && Boolean(selectedId) && Boolean(telemetry?.drive_armed) && requestedDriveMode !== false}
+                    steeringLimit={touchSteeringLimit}
+                    throttleLimit={touchThrottleLimit}
+                    onChange={onDrive}
+                  />
+                }
               />
               <MetricsPanel
                 open={metricsOpen}
@@ -281,6 +313,16 @@ export function KartDashboardPage() {
           onModeChange={onGamepadModeChange}
           onRightStickSteeringChange={onGamepadRightStickSteeringChange}
           onCurveChange={onGamepadCurveChange}
+        />
+        <TouchControlsDialog
+          open={touchControlsOpen}
+          onOpenChange={setTouchControlsOpen}
+          touchEnabled={touchEnabled}
+          onTouchEnabledChange={onTouchEnabledChange}
+          steeringLimit={touchSteeringLimit}
+          throttleLimit={touchThrottleLimit}
+          onSteeringLimitChange={onTouchSteeringLimitChange}
+          onThrottleLimitChange={onTouchThrottleLimitChange}
         />
         <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
         <PairDialog open={pairOpen} onOpenChange={setPairOpen} status={status} />
