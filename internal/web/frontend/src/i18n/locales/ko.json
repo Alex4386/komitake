@@ -9,7 +9,14 @@
     "cancel": "취소",
     "loading": "로딩 중",
     "channel": "채널",
-    "network": "네트워크"
+    "network": "네트워크",
+    "yes": "예",
+    "no": "아니요"
+  },
+  "fullscreen": {
+    "exit": "전체 화면 종료",
+    "promptTitle": "전체 화면 미지원",
+    "promptDescription": "이 버전의 Safari는 DOM 전체 화면을 지원하지 않습니다. 비슷한 경험을 위해 새 탭에서 열까요?"
   },
   "landing": {
     "connectingTitle": "카트에 연결 중",

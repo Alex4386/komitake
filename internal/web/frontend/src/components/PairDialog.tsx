@@ -46,8 +46,15 @@ export function PairDialog({ open, onOpenChange, status }: Props) {
 
   useEffect(() => {
     if (!pairing || !canvasRef.current) return;
-    QRCode.toCanvas(canvasRef.current, [{ data: base64ToBytes(pairing.qr_payload), mode: "byte" }], {
+    const canvas = canvasRef.current;
+    QRCode.toCanvas(canvas, [{ data: base64ToBytes(pairing.qr_payload), mode: "byte" }], {
       version: 4, errorCorrectionLevel: "M", width: 400, margin: 2,
+    }).then(() => {
+      // qrcode sets inline width/height styles that would override our
+      // responsive classes and overflow narrow screens. Clear them so the
+      // canvas scales to its container while staying square.
+      canvas.style.width = "";
+      canvas.style.height = "";
     }).catch((error) => toast.error(String(error)));
   }, [pairing]);
 
@@ -106,7 +113,7 @@ export function PairDialog({ open, onOpenChange, status }: Props) {
               <canvas
                 ref={canvasRef}
                 aria-label={t("pair.qrAria")}
-                className="h-auto w-full max-w-[min(100%,400px)]"
+                className="aspect-square h-auto w-full max-w-[min(100%,400px)]"
               />
             </div>
             <p className="text-center text-sm text-muted-foreground">

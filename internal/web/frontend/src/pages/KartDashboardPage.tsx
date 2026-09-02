@@ -16,6 +16,15 @@ import { TouchDrive } from "@/components/TouchDrive";
 import { TouchControlsDialog } from "@/components/TouchControlsDialog";
 import { VideoFeed } from "@/components/VideoFeed";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useDeviceControl, useRealtime } from "@/hooks/useRealtime";
@@ -53,8 +62,9 @@ export function KartDashboardPage() {
   const [apOpen, setApOpen] = useState(false);
   const [metricsOpen, setMetricsOpen] = useState(false);
   const [videoFullscreen, setVideoFullscreen] = useState(false);
+  const [fullscreenTabPromptOpen, setFullscreenTabPromptOpen] = useState(false);
   const videoFullscreenRef = useRef<HTMLDivElement | null>(null);
-  const videoFullscreenSupported = isFullscreenSupported();
+  const elementFullscreenSupported = isFullscreenSupported();
   const [keyboardSteeringLimit, setKeyboardSteeringLimit] = useState(() => readStoredLimit("komitake-keyboard-steering-limit"));
   const [keyboardThrottleLimit, setKeyboardThrottleLimit] = useState(() => readStoredLimit("komitake-keyboard-throttle-limit"));
   const [touchSteeringLimit, setTouchSteeringLimit] = useState(() => readStoredLimit("komitake-touch-steering-limit"));
@@ -187,10 +197,23 @@ export function KartDashboardPage() {
       });
       return;
     }
-    void requestElementFullscreen(videoSurface).catch((fullscreenError: unknown) => {
-      toast.error(fullscreenError instanceof Error ? fullscreenError.message : t("errors.unableToEnterFullscreen"));
-    });
-  }, [t]);
+    if (elementFullscreenSupported) {
+      void requestElementFullscreen(videoSurface).catch((fullscreenError: unknown) => {
+        toast.error(fullscreenError instanceof Error ? fullscreenError.message : t("errors.unableToEnterFullscreen"));
+      });
+      return;
+    }
+    // No element Fullscreen API (iPhone Safari). Offer a dedicated fullscreen
+    // tab, which reproduces the immersive view including touch controls — the
+    // native <video> fullscreen path cannot host our DOM overlay.
+    setFullscreenTabPromptOpen(true);
+  }, [t, elementFullscreenSupported]);
+
+  const openFullscreenTab = useCallback(() => {
+    setFullscreenTabPromptOpen(false);
+    if (!selectedKart) return;
+    window.open(`/ui/karts/${encodeURIComponent(kartRouteSlug(selectedKart))}/fullscreen`, "_blank", "noopener");
+  }, [selectedKart]);
 
   const stopPairing = async () => {
     try {
@@ -272,7 +295,7 @@ export function KartDashboardPage() {
                 driveModeAvailable={deviceConn === "open"}
                 onDriveModeChange={onDriveModeChange}
                 fullscreen={videoFullscreen}
-                fullscreenAvailable={videoFullscreenSupported}
+                fullscreenAvailable
                 onFullscreenChange={onVideoFullscreenChange}
               />
             </>
@@ -326,6 +349,18 @@ export function KartDashboardPage() {
           onSteeringLimitChange={onTouchSteeringLimitChange}
           onThrottleLimitChange={onTouchThrottleLimitChange}
         />
+        <Dialog open={fullscreenTabPromptOpen} onOpenChange={setFullscreenTabPromptOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>{t("fullscreen.promptTitle")}</DialogTitle>
+              <DialogDescription>{t("fullscreen.promptDescription")}</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setFullscreenTabPromptOpen(false)}>{t("common.no")}</Button>
+              <Button onClick={openFullscreenTab}>{t("common.yes")}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
         <PairDialog open={pairOpen} onOpenChange={setPairOpen} status={status} />
         <ApDialog open={apOpen} onOpenChange={setApOpen} status={status} />

@@ -96,6 +96,7 @@ export function MetricsPanel({
             onClick={onFullscreenChange}
             disabled={!fullscreenAvailable}
             aria-label={fullscreen ? t("metrics.exitFullscreen") : t("metrics.showFullscreen")}
+            className="cursor-pointer disabled:cursor-not-allowed"
           >
             {fullscreen ? <Minimize2 /> : <Maximize2 />}
           </Button>

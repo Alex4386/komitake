@@ -9,7 +9,14 @@
     "cancel": "Cancel",
     "loading": "Loading",
     "channel": "Channel",
-    "network": "Network"
+    "network": "Network",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "fullscreen": {
+    "exit": "Exit fullscreen",
+    "promptTitle": "Fullscreen not supported",
+    "promptDescription": "This version of Safari doesn't support DOM fullscreen. Open a new tab for a similar experience?"
   },
   "landing": {
     "connectingTitle": "Connecting to karts",

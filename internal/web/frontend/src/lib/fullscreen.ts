@@ -10,10 +10,40 @@ type FullscreenElement = HTMLElement & {
   webkitRequestFullscreen?: () => Promise<void> | void;
 };
 
+// iOS Safari on iPhone has no element Fullscreen API; the only native fullscreen
+// is on <video> via webkitEnterFullscreen. iPad and desktop expose the standard
+// or webkit element APIs above.
+type IOSVideoElement = HTMLVideoElement & {
+  webkitEnterFullscreen?: () => void;
+  webkitExitFullscreen?: () => void;
+  webkitSupportsFullscreen?: boolean;
+};
+
 export function isFullscreenSupported(): boolean {
   if (typeof document === "undefined") return false;
   const doc = document as FullscreenDocument;
   return Boolean(doc.fullscreenEnabled || doc.webkitFullscreenEnabled);
+}
+
+// isVideoElementFullscreenSupported reports whether a <video> can go fullscreen
+// natively (iPhone Safari path) when the element Fullscreen API is absent.
+export function isVideoElementFullscreenSupported(): boolean {
+  if (typeof HTMLVideoElement === "undefined") return false;
+  return typeof (HTMLVideoElement.prototype as IOSVideoElement).webkitEnterFullscreen === "function";
+}
+
+// requestVideoElementFullscreen enters native fullscreen on a video element
+// (iPhone Safari). Returns false when the element does not support it.
+export function requestVideoElementFullscreen(video: HTMLVideoElement | null): boolean {
+  if (!video) return false;
+  const iosVideo = video as IOSVideoElement;
+  if (typeof iosVideo.webkitEnterFullscreen === "function") {
+    // webkitSupportsFullscreen is only true once metadata has loaded.
+    if (iosVideo.webkitSupportsFullscreen === false) return false;
+    iosVideo.webkitEnterFullscreen();
+    return true;
+  }
+  return false;
 }
 
 export function getFullscreenElement(): Element | null {
