@@ -2,7 +2,7 @@ import { Camera, LoaderCircle, ShieldAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { EmptyState } from "@/components/ui/empty";
 import type { VideoStatus } from "@/hooks/useVideoDecoder";
 import { cn } from "@/lib/utils";
 
@@ -58,21 +58,16 @@ export function VideoFeed({ deviceId, canvasRef, videoRef, fullscreenRef, fullsc
         />
       )}
       {status !== "playing" && (
-        <Empty className="absolute inset-0 border-0">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              {status === "waiting" ? <LoaderCircle className="animate-spin" /> : status === "unsupported" ? <ShieldAlert /> : <Camera />}
-            </EmptyMedia>
-            <EmptyTitle>{deviceId ? t("video.loadingVideo") : t("video.selectKart")}</EmptyTitle>
-            <EmptyDescription>
-              {deviceId
-                ? mode === "webrtc"
-                  ? t("video.connectingLiveVideo")
-                  : t("video.waitingForStream")
-                : t("video.chooseKart")}
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
+        <EmptyState
+          className="absolute inset-0 border-0"
+          icon={status === "waiting" ? <LoaderCircle className="animate-spin" /> : status === "unsupported" ? <ShieldAlert /> : <Camera />}
+          title={deviceId ? t("video.loadingVideo") : t("video.selectKart")}
+          description={deviceId
+            ? mode === "webrtc"
+              ? t("video.connectingLiveVideo")
+              : t("video.waitingForStream")
+            : t("video.chooseKart")}
+        />
       )}
       {error && (
         <Alert

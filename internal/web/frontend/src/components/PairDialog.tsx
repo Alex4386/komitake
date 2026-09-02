@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import QRCode from "qrcode";
 import { Badge } from "@/components/reui/badge";
 import { Button } from "@/components/ui/button";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { EmptyState } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api, base64ToBytes, type Pairing, type Status } from "@/lib/api";
@@ -106,7 +106,7 @@ export function PairDialog({ open, onOpenChange, status }: Props) {
           <DialogDescription>{t("pair.description")}</DialogDescription>
         </DialogHeader>
         {busy && !pairing ? (
-          <Empty className="border-0 py-10"><EmptyHeader><EmptyMedia variant="icon"><Spinner /></EmptyMedia><EmptyTitle>{t("pair.startingTitle")}</EmptyTitle><EmptyDescription>{t("pair.startingDescription")}</EmptyDescription></EmptyHeader></Empty>
+          <EmptyState className="border-0 py-10" icon={<Spinner />} title={t("pair.startingTitle")} description={t("pair.startingDescription")} />
         ) : pairing ? (
           <div className="flex flex-col items-center gap-4">
             <div className="rounded-lg border bg-white p-3">

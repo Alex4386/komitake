@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { BatteryMedium, Check, ChevronDown, Info, Plus, Wifi } from "lucide-react";
 import { Badge } from "@/components/reui/badge";
 import { Button } from "@/components/ui/button";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { EmptyState } from "@/components/ui/empty";
 import { Item, ItemGroup } from "@/components/ui/item";
 import {
   Popover,
@@ -61,13 +61,12 @@ export function KartPicker({ devices, selectedId, onSelect, onPair }: KartPicker
           </PopoverHeader>
           <Separator />
           {devices.length === 0 ? (
-            <Empty className="border-0 px-4 py-8">
-              <EmptyHeader>
-                <EmptyMedia variant="icon"><Wifi /></EmptyMedia>
-                <EmptyTitle>{t("landing.noKartsTitle")}</EmptyTitle>
-                <EmptyDescription>{t("landing.noKartsDescription")}</EmptyDescription>
-              </EmptyHeader>
-            </Empty>
+            <EmptyState
+              className="border-0 px-4 py-8"
+              icon={<Wifi />}
+              title={t("landing.noKartsTitle")}
+              description={t("landing.noKartsDescription")}
+            />
           ) : (
             <ScrollArea className="max-h-72">
               <ItemGroup className="gap-1 p-1.5">

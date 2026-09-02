@@ -19,14 +19,7 @@ import { KartDetailDialog } from "@/components/KartDetailDialog";
 import { KomitakeBrand } from "@/components/KomitakeBrand";
 import { LanguageSwitcherButton } from "@/components/LanguageSwitcher";
 import { MountainDotField } from "@/components/MountainDotField";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
+import { EmptyState } from "@/components/ui/empty";
 import { Item, ItemGroup } from "@/components/ui/item";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Kart } from "@/lib/api";
@@ -59,32 +52,19 @@ export function KartLanding({
   const lightTheme = mounted && resolvedTheme === "light";
   const pageVariant = variant === "page";
 
-  if (!pageVariant && loading) {
+  if (!pageVariant && (loading || unavailableSlug)) {
     return (
-      <Empty className="m-3 min-h-0 flex-1 border md:m-4">
-        <EmptyHeader>
-          <EmptyMedia variant="icon"><LoaderCircle className="animate-spin" /></EmptyMedia>
-          <EmptyTitle>{t("landing.connectingTitle")}</EmptyTitle>
-          <EmptyDescription>{t("landing.connectingDescription")}</EmptyDescription>
-        </EmptyHeader>
-      </Empty>
-    );
-  }
-
-  if (unavailableSlug) {
-    return (
-      <Empty className="m-3 min-h-0 flex-1 border md:m-4">
-        <EmptyHeader>
-          <EmptyMedia variant="icon"><CircleAlert /></EmptyMedia>
-          <EmptyTitle>{t("landing.kartUnavailableTitle")}</EmptyTitle>
-          <EmptyDescription>
-            {t("landing.kartUnavailableDescription", { slug: unavailableSlug })}
-          </EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent>
+      <EmptyState
+        className="m-3 min-h-0 flex-1 border md:m-4"
+        icon={loading ? <LoaderCircle className="animate-spin" /> : <CircleAlert />}
+        title={loading ? t("landing.connectingTitle") : t("landing.kartUnavailableTitle")}
+        description={loading
+          ? t("landing.connectingDescription")
+          : t("landing.kartUnavailableDescription", { slug: unavailableSlug })}
+        action={loading ? undefined : (
           <Button variant="outline" onClick={onReturn}>{t("landing.returnToSelection")}</Button>
-        </EmptyContent>
-      </Empty>
+        )}
+      />
     );
   }
 
@@ -129,25 +109,19 @@ export function KartLanding({
 
               <div className="flex min-h-0 flex-1 flex-col">
                 {loading ? (
-                  <Empty className="min-h-0 flex-1 border-0">
-                    <EmptyHeader>
-                      <EmptyMedia variant="icon">
-                        <LoaderCircle className="animate-spin" />
-                      </EmptyMedia>
-                      <EmptyTitle>{t("landing.connectingTitle")}</EmptyTitle>
-                      <EmptyDescription>
-                        {t("landing.connectingDescription")}
-                      </EmptyDescription>
-                    </EmptyHeader>
-                  </Empty>
+                  <EmptyState
+                    className="min-h-0 flex-1 border-0"
+                    icon={<LoaderCircle className="animate-spin" />}
+                    title={t("landing.connectingTitle")}
+                    description={t("landing.connectingDescription")}
+                  />
                 ) : devices.length === 0 ? (
-                  <Empty className="min-h-0 flex-1 border-0">
-                    <EmptyHeader>
-                      <EmptyMedia variant="icon"><Wifi /></EmptyMedia>
-                      <EmptyTitle>{t("landing.noKartsTitle")}</EmptyTitle>
-                      <EmptyDescription>{t("landing.noKartsDescription")}</EmptyDescription>
-                    </EmptyHeader>
-                  </Empty>
+                  <EmptyState
+                    className="min-h-0 flex-1 border-0"
+                    icon={<Wifi />}
+                    title={t("landing.noKartsTitle")}
+                    description={t("landing.noKartsDescription")}
+                  />
                 ) : (
                   <ScrollArea className="-mx-1 h-full min-h-0 flex-1 px-1">
                     <ItemGroup className="gap-1">

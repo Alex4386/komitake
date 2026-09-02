@@ -11,13 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
+import { EmptyState } from "@/components/ui/empty";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import type { Status } from "@/lib/api";
 
@@ -69,15 +63,12 @@ export function ApDialog({ open, onOpenChange, status }: Props) {
           </DialogDescription>
         </DialogHeader>
         {!hasSession ? (
-          <Empty className="border-0 py-8">
-            <EmptyHeader>
-              <EmptyMedia variant="icon"><WifiOff /></EmptyMedia>
-              <EmptyTitle>{t("ap.notRunningTitle")}</EmptyTitle>
-              <EmptyDescription>
-                {t("ap.notRunningDescription")}
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
+          <EmptyState
+            className="border-0 py-8"
+            icon={<WifiOff />}
+            title={t("ap.notRunningTitle")}
+            description={t("ap.notRunningDescription")}
+          />
         ) : (
           <Table>
             <TableBody>
