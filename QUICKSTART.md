@@ -184,7 +184,7 @@ Keyboard works too: **W** / **S** or arrow keys to move, **Space** to center the
   Check the Wi-Fi interface (`komitake set --wireless-interface=…` if needed). If **NetworkManager** manages that adapter, run `sudo nmcli device set <iface> managed no`. Then try pairing again from the web UI.
 * **More karts?**  
   Pair each one once; switch between them from the kart picker in the top bar.  
-  Due to SoftAP limitation and "fuji" pairing session, when in pairing mode, other karts disconnects until pairing mode ends.
+  Due to SoftAP limitation and "fuji" pairing session, when in pairing mode, other karts disconnects until pairing mode ends., when it returns to AP mode, the karts will automatically reconnect to komitake.
 * **Unknown disconnects?**  
   If you are using NetworkManager, that might be the reason that disconnects may occur, remove your interface from managed interfaces.  
   ```sh
