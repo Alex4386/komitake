@@ -6,10 +6,12 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/Alex4386/komitake/internal/config"
+	"github.com/Alex4386/komitake/internal/logging"
 	"github.com/Alex4386/komitake/pkg/komitake"
 
 	"github.com/pion/interceptor"
@@ -112,6 +114,13 @@ func serveWebRTCOffer(writer http.ResponseWriter, request *http.Request, client 
 		return
 	}
 	go drainWebRTCRTCP(sender)
+	log := logging.New(nil).With("component", "webrtc", "kart", kart.Ident)
+	peer.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
+		log.Debug("ice connection state", "state", state.String())
+	})
+	peer.OnICEGatheringStateChange(func(state webrtc.ICEGatheringState) {
+		log.Debug("ice gathering state", "state", state.String())
+	})
 	if err := peer.SetRemoteDescription(webrtc.SessionDescription{Type: webrtc.SDPTypeOffer, SDP: offer.SDP}); err != nil {
 		peer.Close()
 		http.Error(writer, "invalid WebRTC SDP offer", http.StatusBadRequest)
@@ -145,12 +154,15 @@ func serveWebRTCOffer(writer http.ResponseWriter, request *http.Request, client 
 		http.Error(writer, "WebRTC answer unavailable", http.StatusInternalServerError)
 		return
 	}
+	log.Debug("negotiated webrtc session",
+		"offer_candidates", countSDPCandidates(offer.SDP),
+		"answer_candidates", countSDPCandidates(localDescription.SDP))
 	writer.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(writer).Encode(webRTCOffer{Type: localDescription.Type.String(), SDP: localDescription.SDP}); err != nil {
 		peer.Close()
 		return
 	}
-	go streamWebRTCVideo(context.Background(), peer, track, client, kart.Ident)
+	go streamWebRTCVideo(context.Background(), peer, track, client, kart.Ident, log)
 }
 
 func newWebRTCAPI() (*webrtc.API, error) {
@@ -168,13 +180,14 @@ func newWebRTCAPI() (*webrtc.API, error) {
 	), nil
 }
 
-func streamWebRTCVideo(parent context.Context, peer *webrtc.PeerConnection, track *webrtc.TrackLocalStaticSample, client Client, selector string) {
+func streamWebRTCVideo(parent context.Context, peer *webrtc.PeerConnection, track *webrtc.TrackLocalStaticSample, client Client, selector string, log *logging.Logger) {
 	ctx, cancel := context.WithCancel(parent)
 	defer cancel()
 	defer peer.Close()
 	connected := make(chan struct{})
 	var connectedOnce sync.Once
 	peer.OnConnectionStateChange(func(state webrtc.PeerConnectionState) {
+		log.Debug("peer connection state", "state", state.String())
 		switch state {
 		case webrtc.PeerConnectionStateConnected:
 			connectedOnce.Do(func() { close(connected) })
@@ -208,6 +221,18 @@ func streamWebRTCVideo(parent context.Context, peer *webrtc.PeerConnection, trac
 			return
 		}
 	}
+}
+
+// countSDPCandidates counts a=candidate lines in an SDP, a cheap way to confirm
+// whether each side actually exchanged ICE candidates during signaling.
+func countSDPCandidates(sdp string) int {
+	count := 0
+	for _, line := range strings.Split(sdp, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "a=candidate:") {
+			count++
+		}
+	}
+	return count
 }
 
 func drainWebRTCRTCP(sender *webrtc.RTPSender) {

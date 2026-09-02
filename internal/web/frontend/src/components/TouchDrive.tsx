@@ -62,7 +62,7 @@ export function TouchDrive({ enabled, steeringLimit, throttleLimit, onChange }: 
   if (!enabled) return null;
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 @container flex items-end justify-between gap-[clamp(0.5rem,2cqw,1rem)] p-[clamp(0.5rem,2.5cqw,1.5rem)] pb-[max(clamp(0.5rem,2.5cqw,1.5rem),env(safe-area-inset-bottom))]">
+    <div className="pointer-events-none absolute inset-0 z-20 @container flex items-end justify-between gap-[clamp(0.5rem,2cqw,1rem)] p-[clamp(0.5rem,2.5cqw,1.5rem)] pb-[max(clamp(0.5rem,2.5cqw,1.5rem),env(safe-area-inset-bottom))]">
       <div className="flex gap-[clamp(0.5rem,2cqw,1rem)]">
         <TouchButton
           label={t("touchInput.steerLeft")}
@@ -139,7 +139,7 @@ function TouchButton({ label, onPress, onRelease, activeState, variant = "steer"
       onPointerCancel={handleUp}
       onContextMenu={(event) => event.preventDefault()}
       className={cn(
-        "pointer-events-auto flex size-[clamp(3rem,14cqw,6rem)] touch-none select-none items-center justify-center rounded-full border shadow-lg backdrop-blur-sm transition-transform active:scale-95",
+        "pointer-events-auto flex w-[clamp(3rem,14cqw,6rem)] h-[clamp(3rem,28cqh,6rem)] touch-none select-none items-center justify-center rounded-full border shadow-lg backdrop-blur-sm transition-transform active:scale-95",
         variant === "gas"
           ? "border-primary/50 bg-primary/80 text-primary-foreground"
           : variant === "brake"
