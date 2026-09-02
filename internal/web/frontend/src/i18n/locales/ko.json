@@ -66,6 +66,7 @@
     "language": "언어",
     "daemonSettings": "데몬 설정",
     "accessPoint": "액세스 포인트",
+    "apiDocs": "API 문서",
     "stopPairing": "페어링 중지"
   },
   "video": {

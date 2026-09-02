@@ -66,6 +66,7 @@
     "language": "Language",
     "daemonSettings": "Daemon Settings",
     "accessPoint": "Access point",
+    "apiDocs": "API docs",
     "stopPairing": "Stop pairing"
   },
   "video": {

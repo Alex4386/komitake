@@ -4,6 +4,7 @@ import {
   BatteryLow,
   BatteryMedium,
   CircleHelp,
+  FileText,
   Gamepad2,
   Hand,
   Keyboard,
@@ -194,6 +195,9 @@ export function TopBar({ status, devices, telemetry, selectedId, onSelect, onPai
               <DropdownMenuLabel>{t("topBar.systemSection")}</DropdownMenuLabel>
               <DropdownMenuItem onSelect={() => navigate("/settings", { state: { from: location.pathname } })}><SlidersHorizontal /> {t("topBar.daemonSettings")}</DropdownMenuItem>
               <DropdownMenuItem onSelect={onAp}><Radio /> {t("topBar.accessPoint")}</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a href="/docs/" target="_blank" rel="noopener noreferrer"><FileText /> {t("topBar.apiDocs")}</a>
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             {pairing && (
               <>

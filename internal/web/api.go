@@ -30,13 +30,18 @@ type Client interface {
 // RegisterAPI mounts the REST API on the given mux, backed by client. The API
 // is composed as a hierarchy of plugins rooted at /v1.
 func RegisterAPI(mux *http.ServeMux, client Client, options ...Options) huma.API {
-	api := humago.New(mux, huma.DefaultConfig("Komitake", "1.0.0"))
+	config := huma.DefaultConfig("Komitake", "1.0.0")
+	// Disable huma's built-in Stoplight Elements page; we serve Scalar at /docs
+	// instead (see registerDocs).
+	config.DocsPath = ""
+	api := humago.New(mux, config)
 	resolvedOptions := Options{}
 	if len(options) > 0 {
 		resolvedOptions = options[0]
 	}
 	Mount(api, rootPlugins(client, resolvedOptions)...)
 	registerKartSerialRedirects(mux, client)
+	registerDocs(mux)
 	return api
 }
 

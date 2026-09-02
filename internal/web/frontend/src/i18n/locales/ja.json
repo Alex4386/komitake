@@ -68,6 +68,7 @@
     "language": "言語",
     "daemonSettings": "デーモン設定",
     "accessPoint": "アクセスポイント",
+    "apiDocs": "API ドキュメント",
     "stopPairing": "ペアリングを停止"
   },
   "video": {
