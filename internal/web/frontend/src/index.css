@@ -158,6 +158,9 @@
     }
   html, body {
     height: 100%;
+    /* Paint the themed background on the document itself so iOS Safari
+       overscroll/rubber-banding reveals the app color, not white/black. */
+    background-color: var(--background);
     }
   body {
     @apply bg-background text-foreground;
