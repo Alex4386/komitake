@@ -62,15 +62,15 @@ export function TouchDrive({ enabled, steeringLimit, throttleLimit, onChange }: 
   if (!enabled) return null;
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-end justify-between gap-3 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6">
-      <div className="flex gap-3">
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 @container flex items-end justify-between gap-[clamp(0.5rem,2cqw,1rem)] p-[clamp(0.5rem,2.5cqw,1.5rem)] pb-[max(clamp(0.5rem,2.5cqw,1.5rem),env(safe-area-inset-bottom))]">
+      <div className="flex gap-[clamp(0.5rem,2cqw,1rem)]">
         <TouchButton
           label={t("touchInput.steerLeft")}
           onPress={() => press("left")}
           onRelease={() => release("left")}
           activeState={active.has("left")}
         >
-          <ChevronLeft className="size-8" />
+          <ChevronLeft className="size-1/2" />
         </TouchButton>
         <TouchButton
           label={t("touchInput.steerRight")}
@@ -78,10 +78,10 @@ export function TouchDrive({ enabled, steeringLimit, throttleLimit, onChange }: 
           onRelease={() => release("right")}
           activeState={active.has("right")}
         >
-          <ChevronRight className="size-8" />
+          <ChevronRight className="size-1/2" />
         </TouchButton>
       </div>
-      <div className="flex gap-3">
+      <div className="flex gap-[clamp(0.5rem,2cqw,1rem)]">
         <TouchButton
           label={t("touchInput.brake")}
           onPress={() => press("brake")}
@@ -89,7 +89,7 @@ export function TouchDrive({ enabled, steeringLimit, throttleLimit, onChange }: 
           activeState={active.has("brake")}
           variant="brake"
         >
-          <span className="text-sm font-semibold uppercase tracking-wide">{t("touchInput.brakeShort")}</span>
+          <span className="text-[clamp(0.625rem,2.5cqw,0.875rem)] font-semibold uppercase tracking-wide">{t("touchInput.brakeShort")}</span>
         </TouchButton>
         <TouchButton
           label={t("touchInput.gas")}
@@ -98,7 +98,7 @@ export function TouchDrive({ enabled, steeringLimit, throttleLimit, onChange }: 
           activeState={active.has("gas")}
           variant="gas"
         >
-          <span className="text-sm font-semibold uppercase tracking-wide">{t("touchInput.gasShort")}</span>
+          <span className="text-[clamp(0.625rem,2.5cqw,0.875rem)] font-semibold uppercase tracking-wide">{t("touchInput.gasShort")}</span>
         </TouchButton>
       </div>
     </div>
@@ -139,7 +139,7 @@ function TouchButton({ label, onPress, onRelease, activeState, variant = "steer"
       onPointerCancel={handleUp}
       onContextMenu={(event) => event.preventDefault()}
       className={cn(
-        "pointer-events-auto flex size-20 touch-none select-none items-center justify-center rounded-full border shadow-lg backdrop-blur-sm transition-transform active:scale-95 sm:size-24",
+        "pointer-events-auto flex size-[clamp(3rem,14cqw,6rem)] touch-none select-none items-center justify-center rounded-full border shadow-lg backdrop-blur-sm transition-transform active:scale-95",
         variant === "gas"
           ? "border-primary/50 bg-primary/80 text-primary-foreground"
           : variant === "brake"
