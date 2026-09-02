@@ -26,6 +26,7 @@ type LowLatencyRtpReceiver = RTCRtpReceiver & {
 };
 
 const WEBRTC_JITTER_BUFFER_TARGET_MILLISECONDS = 40;
+const WEBRTC_ICE_GATHERING_TIMEOUT_MILLISECONDS = 3000;
 
 function configureLowLatencyReceiver(receiver: RTCRtpReceiver): void {
   if ("jitterBufferTarget" in receiver) {
@@ -36,6 +37,27 @@ function configureLowLatencyReceiver(receiver: RTCRtpReceiver): void {
   if ("playoutDelayHint" in lowLatencyReceiver) {
     lowLatencyReceiver.playoutDelayHint = WEBRTC_JITTER_BUFFER_TARGET_MILLISECONDS / 1000;
   }
+}
+
+// The server signals with full (non-trickle) SDP: it gathers all ICE candidates
+// before answering. The browser must do the same, otherwise the offer we POST
+// carries no candidates and the peer has nothing to pair against. Resolve once
+// gathering completes, or after a short cap so a stuck candidate (e.g. a slow
+// STUN server) doesn't block host/srflx candidates already gathered.
+function waitForIceGathering(connection: RTCPeerConnection, timeoutMs: number): Promise<void> {
+  if (connection.iceGatheringState === "complete") return Promise.resolve();
+  return new Promise((resolve) => {
+    const finish = () => {
+      connection.removeEventListener("icegatheringstatechange", onStateChange);
+      clearTimeout(timer);
+      resolve();
+    };
+    const onStateChange = () => {
+      if (connection.iceGatheringState === "complete") finish();
+    };
+    const timer = setTimeout(finish, timeoutMs);
+    connection.addEventListener("icegatheringstatechange", onStateChange);
+  });
 }
 
 export function useWebRTCVideo(deviceId: string | null, enabled: boolean) {
@@ -79,9 +101,14 @@ export function useWebRTCVideo(deviceId: string | null, enabled: boolean) {
 
       const offer = await connection.createOffer();
       await connection.setLocalDescription(offer);
+      // Wait for ICE gathering so the posted offer includes candidates; the
+      // server answers with a complete SDP and does not trickle back to us.
+      await waitForIceGathering(connection, WEBRTC_ICE_GATHERING_TIMEOUT_MILLISECONDS);
+      if (cancelled) return;
+      const localOffer = connection.localDescription ?? offer;
       const response = await fetch(`/v1/karts/by-id/${encodeURIComponent(deviceId)}/webrtc`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: offer.type, sdp: offer.sdp }),
+        body: JSON.stringify({ type: localOffer.type, sdp: localOffer.sdp }),
         signal: abortController.signal,
       });
       if (!response.ok) throw new Error((await response.text()) || response.statusText);
