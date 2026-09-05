@@ -162,11 +162,33 @@ func TestResolveVideoProfileCustomUsesConfiguredArgs(t *testing.T) {
 }
 
 func TestResolveVideoProfileNone(t *testing.T) {
-	profile, err := ResolveVideoProfile(config.VideoFile{Hwaccel: "none"})
+	defer stubVideoDiscovery(map[string]bool{"libx264": true}, nil)()
+	ffmpegPath := testFFmpegPath(t)
+
+	profile, err := ResolveVideoProfile(config.VideoFile{Hwaccel: "none", FFmpegPath: ffmpegPath})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if profile.Backend != config.VideoHwaccelNone || profile.FFmpegPath != "" {
+	if profile.Backend != config.VideoHwaccelNone || profile.Encoder != "libx264" || profile.FFmpegPath != ffmpegPath {
 		t.Fatalf("profile = %+v", profile)
+	}
+}
+
+func TestFFmpegVideoArgumentsNoneUsesLibx264(t *testing.T) {
+	profile := VideoProfile{
+		Backend:    config.VideoHwaccelNone,
+		Encoder:    "libx264",
+		FFmpegPath: "ffmpeg",
+	}
+	arguments := ffmpegVideoArguments(profile)
+	for _, pair := range [][2]string{
+		{"-c:v", "libx264"},
+		{"-preset", "veryfast"},
+		{"-tune", "zerolatency"},
+		{"-crf", "23"},
+	} {
+		if !containsArgumentPair(arguments, pair[0], pair[1]) {
+			t.Fatalf("arguments lack %q %q: %v", pair[0], pair[1], arguments)
+		}
 	}
 }

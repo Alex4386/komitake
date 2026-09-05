@@ -145,7 +145,7 @@ func newSetCommand(opts *options) *cobra.Command {
 	flags.StringVar(&wirelessPSK, "wireless-psk", "", "wireless.psk: fixed AP PSK as hex (set together with --wireless-ssid)")
 	flags.StringVar(&pairingFile, "pairing-file", "", "pairing_file: pairing session store path")
 	flags.Var(&autostart, "autostart", "autostart: start the AP when the daemon boots")
-	flags.StringVar(&videoHwaccel, "video-hwaccel", "", "video.hwaccel: auto, vaapi, nvenc, qsv, custom, or none")
+	flags.StringVar(&videoHwaccel, "video-hwaccel", "", "video.hwaccel: auto, vaapi, nvenc, qsv, custom, or none (software/libx264)")
 	flags.StringVar(&videoFFmpegPath, "video-ffmpeg-path", "", "video.ffmpeg_path: ffmpeg binary path")
 	flags.StringVar(&videoFFmpegProfile, "video-ffmpeg-profile", "", "video.ffmpeg_profile: realtime (low latency), or empty to clear")
 	flags.StringVar(&rcdName, "rcd-name", "", "rcd.name: server display name shown to karts")

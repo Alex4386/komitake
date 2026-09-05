@@ -44,16 +44,25 @@ func ResolveVideoProfile(video config.VideoFile) (VideoProfile, error) {
 		return VideoProfile{}, err
 	}
 	hwaccel := video.NormalizedHwaccel()
-	if hwaccel == config.VideoHwaccelNone {
-		return VideoProfile{
-			Video:   video,
-			Backend: config.VideoHwaccelNone,
-		}, nil
-	}
-
 	ffmpegPath, err := video.ResolvedFFmpegPath()
 	if err != nil {
 		return VideoProfile{}, fmt.Errorf("resolve ffmpeg path: %w", err)
+	}
+
+	if hwaccel == config.VideoHwaccelNone {
+		encoders, encodersErr := listFFmpegEncoders(ffmpegPath)
+		if encodersErr != nil {
+			return VideoProfile{}, encodersErr
+		}
+		if !encoders["libx264"] {
+			return VideoProfile{}, fmt.Errorf("video.hwaccel none: ffmpeg encoder libx264 is unavailable")
+		}
+		return VideoProfile{
+			Video:      video,
+			Backend:    config.VideoHwaccelNone,
+			Encoder:    "libx264",
+			FFmpegPath: ffmpegPath,
+		}, nil
 	}
 
 	if hwaccel == config.VideoHwaccelCustom {

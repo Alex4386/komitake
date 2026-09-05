@@ -26,11 +26,6 @@ type videoEncoder interface {
 	close()
 }
 
-type disabledVideoEncoder struct{}
-
-func (disabledVideoEncoder) writeFrame([]byte) error { return nil }
-func (disabledVideoEncoder) close()                  {}
-
 type videoTranscoder struct {
 	deviceID  string
 	stdin     io.WriteCloser
@@ -55,7 +50,7 @@ func startVideoTranscoder(parent context.Context, deviceID string, hub *videoHub
 		"hwaccel", profile.Backend,
 		"frame_rate", ffmpegVideoFrameRate,
 		"gop_frames", ffmpegVideoGOPFrames,
-		"software_fallback", false,
+		"software", profile.Backend == config.VideoHwaccelNone,
 	}
 	if profileName := profile.Video.NormalizedFFmpegProfile(); profileName != "" {
 		logArgs = append(logArgs, "ffmpeg_profile", profileName)
@@ -64,7 +59,6 @@ func startVideoTranscoder(parent context.Context, deviceID string, hub *videoHub
 		logArgs = append(logArgs, "custom_ffmpeg_args", true)
 	} else {
 		logArgs = append(logArgs,
-			"decoder", profile.Backend,
 			"encoder", profile.Encoder,
 			"render_node", profile.RenderNode,
 			"low_power", profile.Backend == config.VideoHwaccelVAAPI,

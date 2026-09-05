@@ -111,16 +111,16 @@ instead of increasing end-to-end delay.
 
 At info level the daemon logs the transcoder contract and lifecycle explicitly:
 `hwaccel=<backend>`, `encoder=<ffmpeg encoder>`, optional `render_node` for VAAPI,
-`low_power=true` on VAAPI, and `software_fallback=false`. It then logs the FFmpeg PID and
-`video transcoder ready` after the first hardware-encoded frame. Verify with:
+`low_power=true` on VAAPI, and `software=true|false`. It then logs the FFmpeg PID and
+`video transcoder ready` after the first encoded frame. Verify with:
 
 ```sh
 journalctl -u komitake -f | grep 'video transcoder'
 ```
 
 If VAAPI initialization fails, media setup fails and the daemon logs an error; it
-does not silently fall back to `libx264` unless `video.hwaccel` is `custom` and you
-configure it that way.
+does not silently fall back to `libx264`. Use `video.hwaccel=none` for explicit
+software encoding, or `custom` with your own ffmpeg args.
 
 ### Video transcode config
 
@@ -156,7 +156,7 @@ Optional overrides:
 }
 ```
 
-- `hwaccel`: `auto` (default, probes encoders), `vaapi`, `nvenc`, `qsv`, or `custom`.
+- `hwaccel`: `auto` (default, probes encoders), `vaapi`, `nvenc`, `qsv`, `custom`, or `none` (software/`libx264`).
 - `ffmpeg_path`: optional; defaults to `ffmpeg` on `PATH`.
 - `ffmpeg_profile`: optional preset tuning. `realtime` lowers buffering and encoder
   latency (e.g. `-fflags nobuffer`, backend-specific low-delay flags). Applied before

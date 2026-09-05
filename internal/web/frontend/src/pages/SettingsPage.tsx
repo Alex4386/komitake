@@ -423,8 +423,6 @@ export function SettingsPage() {
                           </SelectContent>
                         </Select>
                       </SettingsRow>
-                      {videoHwaccel !== "none" && (
-                        <>
                       <SettingsRow label={t("settings.videoFFmpegPathLabel")} hint={t("settings.videoFFmpegPathHint")}>
                         <Input
                           id="video-ffmpeg-path"
@@ -475,8 +473,6 @@ export function SettingsPage() {
                               spellCheck={false}
                             />
                           </SettingsRow>
-                        </>
-                      )}
                         </>
                       )}
                     </>

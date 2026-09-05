@@ -46,6 +46,8 @@ func ffmpegNamedProfileArguments(profileName, backend string) (input, output []s
 			output = []string{"-preset", "p1", "-tune", "ull", "-rc-lookahead", "0", "-delay", "0"}
 		case config.VideoHwaccelQSV:
 			output = []string{"-look_ahead", "0"}
+		case config.VideoHwaccelNone:
+			output = []string{"-preset", "ultrafast", "-tune", "zerolatency"}
 		}
 	}
 	return input, output
@@ -93,6 +95,15 @@ func ffmpegBuiltinArguments(profile VideoProfile) []string {
 		arguments = append(arguments,
 			"-c:v", profile.Encoder,
 			"-global_quality", "24",
+		)
+	case config.VideoHwaccelNone:
+		arguments = append(arguments, prefix...)
+		arguments = append(arguments, input...)
+		arguments = append(arguments,
+			"-c:v", profile.Encoder,
+			"-preset", "veryfast",
+			"-tune", "zerolatency",
+			"-crf", "23",
 		)
 	default:
 		arguments = append(arguments, prefix...)

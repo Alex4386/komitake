@@ -145,7 +145,7 @@ func TestTranscoderStartupLogIdentifiesVAAPIAndNoSoftwareFallback(t *testing.T) 
 	}
 	transcoder.close()
 	logText := output.String()
-	for _, wanted := range []string{"starting video transcoder", "encoder=h264_vaapi", "hwaccel=vaapi", "software_fallback=false"} {
+	for _, wanted := range []string{"starting video transcoder", "encoder=h264_vaapi", "hwaccel=vaapi", "software=false"} {
 		if !strings.Contains(logText, wanted) {
 			t.Fatalf("log missing %q: %s", wanted, logText)
 		}

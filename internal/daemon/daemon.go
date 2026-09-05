@@ -161,8 +161,6 @@ func NewManager(cfg config.Runtime) *Manager {
 	videoProfile, err := ResolveVideoProfile(cfg.Video)
 	if err != nil {
 		logger.Error("video hwaccel profile unavailable", "hwaccel", cfg.Video.NormalizedHwaccel(), "error", err)
-	} else if videoProfile.Backend == config.VideoHwaccelNone {
-		logger.Info("video transcoding disabled", "hwaccel", config.VideoHwaccelNone)
 	}
 	manager := &Manager{
 		cfg:          cfg,
@@ -184,19 +182,10 @@ func NewManager(cfg config.Runtime) *Manager {
 		restartCh:    make(chan struct{}),
 	}
 	manager.newTranscoder = func(ctx context.Context, deviceID string, hub *videoHub, logger *slog.Logger) (videoEncoder, error) {
-		if manager.videoProfile.Backend == config.VideoHwaccelNone {
-			logger.Info("video transcoding disabled", "ident", deviceID, "hwaccel", config.VideoHwaccelNone)
-			return disabledVideoEncoder{}, nil
-		}
 		if manager.videoProfile.Backend == "" {
 			profile, profileErr := ResolveVideoProfile(cfg.Video)
 			if profileErr != nil {
 				return nil, profileErr
-			}
-			if profile.Backend == config.VideoHwaccelNone {
-				manager.videoProfile = profile
-				logger.Info("video transcoding disabled", "ident", deviceID, "hwaccel", config.VideoHwaccelNone)
-				return disabledVideoEncoder{}, nil
 			}
 			manager.videoProfile = profile
 		}

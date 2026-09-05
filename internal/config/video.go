@@ -28,9 +28,9 @@ type VideoFFmpegArgsFile struct {
 
 // VideoFile configures live camera transcoding in the daemon.
 type VideoFile struct {
-	// Hwaccel selects the hardware backend. "auto" discovers an H.264 encoder
-	// at daemon startup; "custom" uses only ffmpeg_args (no built-in hwaccel);
-	// "none" disables live video transcoding.
+	// Hwaccel selects the encoder backend. "auto" discovers an H.264 hardware
+	// encoder at daemon startup; "custom" uses only ffmpeg_args; "none" uses
+	// software encoding (libx264).
 	Hwaccel string `json:"hwaccel,omitempty"`
 	// FFmpegPath overrides the ffmpeg binary searched on PATH.
 	FFmpegPath string `json:"ffmpeg_path,omitempty"`
@@ -76,7 +76,7 @@ func ValidateVideoHwaccel(raw string) error {
 	case VideoHwaccelAuto, VideoHwaccelVAAPI, VideoHwaccelNVENC, VideoHwaccelQSV, VideoHwaccelCustom, VideoHwaccelNone:
 		return nil
 	default:
-		return fmt.Errorf("video.hwaccel %q: want auto, vaapi, nvenc, qsv, custom, or none", raw)
+		return fmt.Errorf("video.hwaccel %q: want auto, vaapi, nvenc, qsv, custom, or none (software)", raw)
 	}
 }
 

@@ -64,18 +64,27 @@ On **WSL2** (or another Linux box with a cross-toolchain). Building inside WSL i
 
 ```sh
 sudo apt update
-sudo apt install build-essential flex bison libssl-dev libelf-dev bc dwarves pahole python3 rsync linux-firmware
+sudo apt install build-essential flex bison libssl-dev libelf-dev bc dwarves pahole python3 rsync linux-firmware wireless-regdb
 
 git clone https://github.com/microsoft/WSL2-Linux-Kernel.git
 cd WSL2-Linux-Kernel
 git checkout linux-msft-wsl-6.18.y   # or the latest 6.18 WSL branch/tag
 
 cp Microsoft/config-wsl .config
+# config-wsl already has cfg80211/mac80211/rtl8xxxu as modules.
+# These flags are what that defconfig leaves wrong for Komitake SoftAP:
+./scripts/config --disable STANDALONE
+./scripts/config --enable RFKILL
+./scripts/config --enable CRYPTO_CCM
+./scripts/config --enable CRYPTO_CMAC
 ./scripts/config --module CFG80211
 ./scripts/config --module MAC80211
-./scripts/config --disable FW_LOADER_STANDALONE
+./scripts/config --module RTL8XXXU
+./scripts/config --enable RTL8XXXU_UNTESTED
+./scripts/config --set-str EXTRA_FIRMWARE "rtlwifi/rtl8192eu_nic.bin regulatory.db regulatory.db.p7s"
+./scripts/config --set-str EXTRA_FIRMWARE_DIR "/lib/firmware"
 make olddefconfig
-make menuconfig   # enable your Wi-Fi driver; double-check firmware options below
+make menuconfig   # other chips: change the driver/firmware lines above, then re-run olddefconfig
 ```
 
 ### Wireless stack (everyone)
@@ -88,46 +97,30 @@ Build these as **modules** (`M`), not built-in (`Y`). You load them with `modpro
 | same | **Generic IEEE 802.11 Networking Stack (mac80211)** | **`M`** |
 | `Device Drivers` → `USB support` | USB host support | usually already on in `config-wsl` |
 
-Then enable **your** driver's `CONFIG_*` option in `menuconfig` under `Device Drivers` → `Network device support` → `Wireless LAN`. Also turn on `RFKILL` if the driver wants it.
+Then enable **your** driver's `CONFIG_*` option in `menuconfig` under `Device Drivers` → `Network device support` → `Wireless LAN` (the RTL8192EU example already turns on `rtl8xxxu` + `RTL8XXXU_UNTESTED` in the commands above). **RFKILL** is required; `config-wsl` ships with it off.
 
 ### Embed firmware (required on WSL)
 
-[WSL's firmware resolution is broken](https://github.com/dorssel/usbipd-win/issues/390#issuecomment-1223615102). Putting files in `/lib/firmware` alone often is not enough. Bake the blob into the kernel binary instead.
+[WSL's firmware resolution is broken](https://github.com/dorssel/usbipd-win/issues/390#issuecomment-1223615102). Putting files in `/lib/firmware` at runtime is not enough. Bake the blobs into the kernel binary.
 
-1. Find the firmware path your driver requests (`dmesg` after a failed probe, the driver source, or files under `/lib/firmware` after `apt install linux-firmware`).
+`Microsoft/config-wsl` also has `CONFIG_STANDALONE=y` (**Select only drivers that don't need compile-time external firmware**). That is **not** `FW_LOADER_STANDALONE` — that symbol is not in this tree, so disabling it does nothing. Turn **`CONFIG_STANDALONE` off**.
+
+`config-wsl` sets `CONFIG_CFG80211_REQUIRE_SIGNED_REGDB=y`. Embed `regulatory.db` and `regulatory.db.p7s` as well as the NIC firmware (`wireless-regdb` provides the regdb files).
+
+If the distro only ships `*.bin.xz`, decompress (or copy uncompressed files) so `EXTRA_FIRMWARE` names exist under `EXTRA_FIRMWARE_DIR`.
+
+1. Confirm the paths exist (`ls /lib/firmware/rtlwifi/rtl8192eu_nic.bin /lib/firmware/regulatory.db`).
 2. In `menuconfig` → `Device Drivers` → `Generic Driver Options`:
 
 | Option | Setting |
 |--------|---------|
-| **Select only drivers that don't need compile-time external firmware** | **off** (`CONFIG_FW_LOADER_STANDALONE` disabled) |
-| **Firmware loader** → **Build named firmware blobs into the kernel binary** | path to your `.bin` / `.fw` (see example below) |
-| **Firmware blobs root directory** | `/lib/firmware`, or **`.`** if you copied the firmware tree into the kernel source |
-
-Or use `scripts/config` before `make olddefconfig`:
-
-```sh
-./scripts/config --disable FW_LOADER_STANDALONE
-./scripts/config --set-str EXTRA_FIRMWARE "<firmware-path-under-root>"
-./scripts/config --set-str EXTRA_FIRMWARE_DIR "/lib/firmware"
-```
+| **Select only drivers that don't need compile-time external firmware** | **off** (`CONFIG_STANDALONE`) |
+| **Firmware loader** → **Build named firmware blobs into the kernel binary** | `rtlwifi/rtl8192eu_nic.bin regulatory.db regulatory.db.p7s` |
+| **Firmware blobs root directory** | `/lib/firmware`, or **`.`** if you copied the files into the kernel source |
 
 ### Example: RTL8192EU
 
-Chipset **RTL8192EU** → in-tree driver **`rtl8xxxu`** (`CONFIG_RTL8XXXU`). Firmware: **`rtlwifi/rtl8192eu_nic.bin`**.
-
-```sh
-./scripts/config --module RTL8XXXU
-./scripts/config --enable RTL8XXXU_UNTESTED
-./scripts/config --set-str EXTRA_FIRMWARE "rtlwifi/rtl8192eu_nic.bin"
-./scripts/config --set-str EXTRA_FIRMWARE_DIR "/lib/firmware"
-```
-
-Optional: copy the firmware tree into the kernel source and point `EXTRA_FIRMWARE_DIR` at `.`:
-
-```sh
-cp -r /lib/firmware/rtlwifi .
-./scripts/config --set-str EXTRA_FIRMWARE_DIR "."
-```
+Chipset **RTL8192EU** → in-tree driver **`rtl8xxxu`**. `config-wsl` already has `CONFIG_RTL8XXXU=m` but leaves **`CONFIG_RTL8XXXU_UNTESTED` off**. The clone/config block above turns UNTESTED on and embeds `rtlwifi/rtl8192eu_nic.bin`.
 
 Kconfig reference: [`drivers/net/wireless/realtek/rtl8xxxu/Kconfig`](https://github.com/torvalds/linux/blob/master/drivers/net/wireless/realtek/rtl8xxxu/Kconfig).
 
@@ -246,6 +239,7 @@ WSL-specific reminders:
 | No wireless adapter after attach | [On startup](#4-on-startup) `modprobe` chain; `dmesg`, `lsusb`, `lsmod`; confirm driver built as **`M`** and `make modules_install` ran; firmware embedded (`EXTRA_FIRMWARE`, `FW_LOADER_STANDALONE` off) |
 | `iw` missing | `sudo apt install iw` |
 | `hostapd` / AP won't start | `iw list` AP support; try another channel (`komitake set --wireless-channel=6`); check `journalctl -u komitake.service -e` |
+| `nl80211: kernel reports: key addition failed` | `config-wsl` has `CRYPTO_CCM=m` and never loads it; build **CCM/CMAC in** (`CRYPTO_CCM=y`). Also confirm `RTL8XXXU_UNTESTED=y` and that `EXTRA_FIRMWARE` actually contains `rtl8192eu_nic.bin` (not only an `.xz` on disk). |
 | Still on stock kernel | `.wslconfig` path must use `\\`, `wsl --shutdown` after edits, `uname -r` to verify |
 | Everything is cursed | Use native Linux instead. Seriously. |
 
